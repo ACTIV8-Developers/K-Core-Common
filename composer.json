@@ -1,5 +1,5 @@
 {
-    "name": "activ8-developers/KCoreCommon",
+    "name": "activ8-developers/k-core-common",
     "description": "CRUD Resource Library for K Framework",
     "keywords": ["http", "https", "curl", "socket", "rest", "json", "xml"],
     "authors": [
