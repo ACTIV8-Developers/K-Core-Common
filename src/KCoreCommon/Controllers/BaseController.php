@@ -2,6 +2,40 @@
 
 namespace KCoreCommon\Controllers;
 
+use App\Models\DAO\BaseDAO;
+use App\Services\AWS\S3;
+use App\Services\CVParser\CVParser;
+use App\Services\ImagePath\ImagePath;
+use Carbon\Carbon;
+use Core\Container\Container;
+use Core\Core\Controller;
+use Core\Database\Interfaces\DatabaseInterface;
+use Core\Http\Interfaces\ResponseInterface;
+use Core\Http\Request;
+use Core\Http\Response;
+use Core\Services\JobQueue\JobExecutor;
+use Core\Services\Mailer\Mailer;
+use DateTime;
+use Monolog\Logger;
+use OAuth2\Server;
+use PURL;
+
+/**
+ * Class BaseController
+ * @property Server oauth
+ * @property array user
+ * @property array permissions
+ * @property Request request
+ * @property Mailer mailer
+ * @property DatabaseInterface db
+ * @property Logger logger
+ * @property CVParser CVParser
+ * @property S3 s3
+ * @property JobExecutor $executor
+ * @property ImagePath ImagePath
+ *
+ * @package App\Controllers
+ */
 abstract class BaseController extends Controller
 {
     /**
@@ -24,7 +58,7 @@ abstract class BaseController extends Controller
      * @param int $options
      * @return ResponseInterface|Response
      */
-    public function json($data, $code = 200, $options = 0): ResponseInterface
+    public function json(array $data, int $code = 200, int $options = 0)
     {
         $response = new Response();
         $response->headers->set('Content-Type', 'application/json');
@@ -34,16 +68,56 @@ abstract class BaseController extends Controller
         return $response;
     }
 
+    public function jsonData($data, $code = 200)
+    {
+        $result = [
+            'status' => 0,
+            'message' => "OK",
+            'data' => $data
+        ];
+
+        return $this->json($result, $code);
+    }
+
+    public function jsonCreate($opResult, $code = 201, $codeError = 500, $msgOK = 'OK', $msgError = 'ERROR')
+    {
+        return $this->jsonResponse($opResult, $code, $codeError, $msgOK, $msgError);
+    }
+
+    public function jsonUpdate($opResult, $code = 200, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
+    {
+        return $this->jsonResponse($opResult, $code, $codeError, $msgOK, $msgError);
+    }
+
+    public function jsonDelete($opResult, $code = 200, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
+    {
+        return $this->jsonResponse($opResult, $code, $codeError, $msgOK, $msgError);
+    }
+
+    public function jsonResponse($opResult, $code, $codeError, $msgOK, $msgError)
+    {
+        $code = $opResult ? $code : $codeError;
+        $result = [
+            'status' => $opResult ? 0 : 1,
+            'message' => $opResult ? $msgOK : $msgError,
+            'data' => [
+                'id' => $opResult
+            ]
+        ];
+
+        return $this->json($result, $code);
+    }
+
     /**
      * @param $url
      * @return Response
      */
-    public function redirect($url): ResponseInterface
+    public function redirect($url): Response
     {
         $response = new Response();
         $response
             ->setStatusCode(301)
-            ->setHeader('Location', PURL::base($url));
+            ->setHeader('Location', \PURL::base($url));
         return $response;
     }
 
@@ -133,7 +207,7 @@ abstract class BaseController extends Controller
     }
 
 
-    protected function getAuthorizationHeader()
+    protected function getAuthorizationHeader(): ?string
     {
         $headers = null;
         if (isset($_SERVER['Authorization'])) {
@@ -164,7 +238,7 @@ abstract class BaseController extends Controller
         return null;
     }
 
-    protected function sanitizeDate($value)
+    protected function sanitizeDate($value): ?string
     {
         if (empty($value)) {
             return null;
@@ -184,7 +258,7 @@ abstract class BaseController extends Controller
      * @param string
      * @return string|null
      */
-    public function convertDate($date)
+    public function convertDate($date): ?string
     {
         if ($date) {
             return date('Y-m-d', strtotime($date));
@@ -199,7 +273,7 @@ abstract class BaseController extends Controller
      * @param string
      * @return string|null
      */
-    public function currentDateTime()
+    public function currentDateTime(): ?string
     {
         return date('Y-m-d H:i:s');
     }
@@ -211,17 +285,16 @@ abstract class BaseController extends Controller
      * @param string
      * @return string|null
      */
-    public function toFrontDateTime($date, $format = "m/d/Y H:i:s")
+    public function toFrontDateTime($date, $format = "m/d/Y H:i"): ?string
     {
         if ($date) {
-            $dt = Carbon::parse($date, "UTC");
-            $dt->setTimezone($this->tz);
+            $dt = Carbon::parse($date);
             return $dt->format($format);
         }
         return null;
     }
 
-    public function toFrontDate($date, $format = "m/d/Y")
+    public function toFrontDate($date, $format = "m/d/Y"): ?string
     {
         if ($date) {
             $dt = Carbon::parse($date);
@@ -239,7 +312,7 @@ abstract class BaseController extends Controller
      * @param array $data
      * @return string
      */
-    protected function buffer($view, array $data = [])
+    protected function buffer($view, array $data = []): string
     {
         // Extract variables.
         extract($data);
@@ -260,7 +333,7 @@ abstract class BaseController extends Controller
      * @param String
      * @return BaseDAO
      */
-    protected function getDaoForObject($class)
+    protected function getDaoForObject($class): BaseDAO
     {
         $dao = (new BaseDAO(new $class));
         $dao->setContainer($this->container);
@@ -270,7 +343,7 @@ abstract class BaseController extends Controller
     /**
      * @return string
      */
-    protected function getApiResourceUrl()
+    protected function getApiResourceUrl(): string
     {
         return str_replace(API_PREFIX . '/', "", $this->request->getUri());
     }
@@ -299,7 +372,7 @@ abstract class BaseController extends Controller
         return $filename;
     }
 
-    protected function getFileExtension($filename)
+    protected function getFileExtension($filename): string
     {
         $x = explode('.', $filename);
         return '.' . end($x);
@@ -312,75 +385,9 @@ abstract class BaseController extends Controller
 
     /* Project specific
     ============================================================ */
-    protected function phoneNumber($areaCode, $phoneNumber, $phoneExtension)
+    protected function phoneNumber($areaCode, $phoneNumber, $phoneExtension): string
     {
         return ($areaCode ? '(' . $areaCode . ') ' : '') . $phoneNumber . ' ' . $phoneExtension;
-    }
-
-    public function getStartEndDates($filterDays)
-    {
-        $endDate = $this->currentDateTime();
-        switch ($filterDays) {
-            case 'This week':
-                $startDate = date('Y-m-d H:i:s', strtotime('last monday'));
-                break;
-            case 'Previous week':
-                $startDate = date('Y-m-d H:i:s', strtotime('last monday'));
-                $endDate = date('Y-m-d H:i:s', strtotime('last sunday'));
-                break;
-            case 'Last 7 days':
-                $startDate = date('Y-m-d H:i:s', strtotime('-7 days'));
-                break;
-            case 'This month':
-                $startDate = date('Y-m-d H:i:s', strtotime('first day of this month'));
-                break;
-            case 'Last 30 days':
-                $startDate = date('Y-m-d H:i:s', strtotime('-30 days'));
-                break;
-            case 'Last month':
-                $startDate = date('Y-m-d H:i:s', strtotime('first day of last month'));
-                $endDate = date('Y-m-d H:i:s', strtotime('last day of last month'));
-                break;
-            case 'This quarter':
-                $current_quarter = ceil(date('n') / 3);
-                $startDate = date('Y-m-d H:i:s', strtotime(date('Y') . '-' . (($current_quarter * 3) - 2) . '-1'));
-                $endDate = date('Y-m-d H:i:s', strtotime(date('Y') . '-' . (($current_quarter * 3)) . '-1'));
-                break;
-            case 'Last quarter':
-                [$startDate, $endDate] = $this->getLastQuarter();
-                break;
-            case 'Last 6 months':
-                $startDate = date('Y-m-d H:i:s', strtotime('-6 months'));
-                break;
-            case 'Last 12 months':
-                $startDate = date('Y-m-d H:i:s', strtotime('-12 months'));
-                break;
-            default:
-                $startDate = date('Y-m-d H:i:s', strtotime('last monday'));
-                break;
-        }
-        return [$startDate, $endDate];
-    }
-
-    public function getLastQuarter()
-    {
-        $current_month = date('m');
-        $current_year = date('Y');
-
-        if ($current_month >= 1 && $current_month <= 3) {
-            $start_date = strtotime('1-October-' . ($current_year - 1));  // timestamp or 1-October Last Year 12:00:00 AM
-            $end_date = strtotime('1-January-' . $current_year);  // // timestamp or 1-January  12:00:00 AM means end of 31 December Last year
-        } else if ($current_month >= 4 && $current_month <= 6) {
-            $start_date = strtotime('1-January-' . $current_year);  // timestamp or 1-Januray 12:00:00 AM
-            $end_date = strtotime('1-April-' . $current_year);  // timestamp or 1-April 12:00:00 AM means end of 31 March
-        } else if ($current_month >= 7 && $current_month <= 9) {
-            $start_date = strtotime('1-April-' . $current_year);  // timestamp or 1-April 12:00:00 AM
-            $end_date = strtotime('1-July-' . $current_year);  // timestamp or 1-July 12:00:00 AM means end of 30 June
-        } else if ($current_month >= 10 && $current_month <= 12) {
-            $start_date = strtotime('1-July-' . $current_year);  // timestamp or 1-July 12:00:00 AM
-            $end_date = strtotime('1-October-' . $current_year);  // timestamp or 1-October 12:00:00 AM means end of 30 September
-        }
-        return [date('Y-m-d H:i:s', $start_date), date('Y-m-d H:i:s', $end_date)];
     }
 
     public function appendQueryForFields($queryParam, $fields, $query): string
@@ -401,59 +408,14 @@ abstract class BaseController extends Controller
         return $queryParam;
     }
 
-    protected function elasticSearch(string $index, string $query, array $queryParams, int $limit = 50): array
+    function slugify($string, $separator = '-')
     {
-//        $data = [
-//            'query' => [
-//                'bool' => [
-//                    'must' => [
-//                        'query_string' => [
-//                            'fields' => $queryParams,
-//                            'query' => '*' . $query . '*'
-//                        ]
-//                    ],
-//                    'filter' => [
-//                        'term' => [
-//                            'CompanyID' => $this->user['Contact']['CompanyID']
-//                        ]
-//                    ]
-//                ]
-//            ],
-//            "size" => $limit
-//        ];
-//        $json = json_encode($data);
-//
-//        $purli = (new Purli())
-//            ->setHeader('Content-Type', 'application/json')
-//            ->setParams($json)
-//            ->post(sprintf("http://elasticsearch:9200/%s/_search", $index))
-//            ->close();
-//
-//        $response = $purli->response();
-//        $array = $response->asArray();
-        $result = $this->elastic->search([
-            'index' => $index,
-            'body' => [
-                'query' => [
-                    'bool' => [
-                        'must' => [
-                            'query_string' => [
-                                'fields' => $queryParams,
-                                'query' => '*' . $query . '*',
-                            ]
-                        ],
-                        'filter' => [
-                            'term' => [
-                                'CompanyID' => $this->user['Contact']['CompanyID']
-                            ]
-                        ]
-                    ]
-                ]
-            ],
-            'size' => $limit
-        ]);
-
-        return $result['hits']['hits'];
+        $accents_regex = '~&([a-z]{1,2})(?:acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml);~i';
+        $special_cases = array('&' => 'and', "'" => '');
+        $string = mb_strtolower(trim($string), 'UTF-8');
+        $string = str_replace(array_keys($special_cases), array_values($special_cases), $string);
+        $string = preg_replace($accents_regex, '$1', htmlentities($string, ENT_QUOTES, 'UTF-8'));
+        $string = preg_replace("/[^a-z0-9]/u", "$separator", $string);
+        return preg_replace("/[$separator]+/u", "$separator", $string);
     }
 }
-?>
