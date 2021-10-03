@@ -19,7 +19,7 @@ class CommandData implements \ArrayAccess
             if (!is_array($value)) {
                 $data[$key] = $this->clean($value, $template[$key] ?? "");
             } else {
-                $data[$key] = $this->cleanData($value, $template[$key]);
+                $data[$key] = $this->cleanData($value, $template[$key] ?? []);
             }
         }
 
