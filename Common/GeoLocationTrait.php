@@ -8,7 +8,7 @@ use App\Models\TblState;
 
 trait GeoLocationTrait
 {
-    private function getLatLonFromAddressLine($defaults = [])
+    protected function getLatLonFromAddressLine($defaults = [])
     {
         if (empty($defaults)) {
             $defaults = $this->data();
@@ -45,15 +45,14 @@ trait GeoLocationTrait
             ];
     }
 
-    private function getAddressFromLatLon($defaults = []): array
+    protected function getAddressFromLatLon($defaults = []): array
     {
         if (empty($defaults)) {
             $defaults = $this->data();
         }
-        // TODO take defaults first
 
-        $Latitude = $this->data('Latitude');
-        $Longitude = $this->data('Longitude');
+        $Latitude = $defaults['Latitude'];
+        $Longitude = $defaults['Longitude'];
 
         $key = getenv('GOOGLE_MAPS_GEO_KEY');
         $url = sprintf("https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=%s", $Latitude, $Longitude, $key);

@@ -2,6 +2,7 @@
 
 namespace Common\Controllers;
 
+use Common\DAOTrait;
 use Common\Models\BaseDAO;
 use Carbon\Carbon;
 use Core\Container\Container;
@@ -16,6 +17,8 @@ use PURL;
  */
 abstract class RootController extends Controller
 {
+    use DAOTrait;
+
     /**
      * BaseController constructor.
      *
@@ -385,24 +388,6 @@ abstract class RootController extends Controller
     protected function phoneNumber($areaCode, $phoneNumber, $phoneExtension): string
     {
         return ($areaCode ? '(' . $areaCode . ') ' : '') . $phoneNumber . ' ' . $phoneExtension;
-    }
-
-    public function appendQueryForFields($queryParam, $fields, $query): string
-    {
-        if (!empty($query)) {
-            $queryParam .= empty($queryParam) ? " (" : " AND (";
-            $chunks = explode(' ', $query);
-            foreach ($chunks as $chunk) {
-                $likeQuery = "";
-                foreach ($fields as $f) {
-                    $likeQuery .= sprintf(" %s LIKE '%%%s%%' OR ", $f, $chunk);
-                }
-                $likeQuery = substr($likeQuery, 0, strlen($likeQuery) - 3);
-                $queryParam .= sprintf("(%s) AND ", $likeQuery);
-            }
-            return substr($queryParam, 0, strlen($queryParam) - 4) . ")";
-        }
-        return $queryParam;
     }
 
     protected function slugify($string, $separator = '-')

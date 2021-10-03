@@ -302,7 +302,7 @@ trait ResourceCRUDTrait
         return $rt;
     }
 
-    public function handleSingleResourceRead(BaseDAO $resourceDao, $output = true)
+    public function handleSingleResourceRead(BaseDAO $resourceDao, $output = true, $overrideParentKey = null)
     {
         /** Read user input from Request object.
          * =============================================================================== */
@@ -386,6 +386,12 @@ trait ResourceCRUDTrait
         $sql = $resourceDao
             ->select($select)
             ->join($joins);
+
+        /** If table is part of the parent model feature add it to WHERE clause.
+         * =============================================================================== */
+        if ($overrideParentKey !== null) {
+            $parentResourceKey = $overrideParentKey;
+        }
 
         /** Add WHERE part of the query.
          * =============================================================================== */
