@@ -26,6 +26,11 @@ class CommandData implements \ArrayAccess
         return $data;
     }
 
+    public function toArray(): array
+    {
+        return $this->data;
+    }
+
     public function __get($key)
     {
         return $this->data[$key] ?? null;
