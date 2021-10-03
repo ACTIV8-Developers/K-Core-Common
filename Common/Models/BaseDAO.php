@@ -1,8 +1,7 @@
 <?php
 
-namespace KCoreCommon\Models;
+namespace Common\Models;
 
-use App\Models\BaseObject;
 use Core\Core\Model;
 use Core\Database\Interfaces\DatabaseInterface;
 use PDO;
@@ -41,7 +40,7 @@ class BaseDAO extends Model
     protected string $order = 'asc';
 
     /**
-     * @var string
+     * @var ?string
      */
     protected ?string $orderBy = null;
 
@@ -56,12 +55,12 @@ class BaseDAO extends Model
     protected $where = null;
 
     /**
-     * @var int
+     * @var ?int
      */
     protected ?int $start = null;
 
     /**
-     * @var int
+     * @var ?int
      */
     protected ?int $limit = null;
 
@@ -90,9 +89,9 @@ class BaseDAO extends Model
 
     /**
      * @param int $type
-     * @return null
+     * @return array|null
      */
-    public function getOne(int $type = PDO::FETCH_ASSOC)
+    public function getOne(int $type = PDO::FETCH_ASSOC): ?array
     {
         $data = $this->getAll($type);
         if (isset($data[0])) {
@@ -204,7 +203,7 @@ class BaseDAO extends Model
      * @param int
      * @return array
      */
-    public function get($id)
+    public function get($id): ?array
     {
         $data = $this->db->select(sprintf('SELECT * FROM %s WHERE %s=:id',
                 $this->table, $this->pk)
@@ -213,6 +212,7 @@ class BaseDAO extends Model
         if (isset($data[0])) {
             return $data[0];
         }
+
         return null;
     }
 
@@ -259,6 +259,7 @@ class BaseDAO extends Model
                 $sql .= ' WHERE ' . $this->where;
             }
         }
+
         return $this->db->select($sql, $values)[0]['cnt'];
     }
 
@@ -317,14 +318,19 @@ class BaseDAO extends Model
         return $this->db->update($sql, $data);
     }
 
-    public function bulkUpdate(array $ids, array $data)
+    public function bulkUpdate(array $ids, array $data): int
     {
+        if (empty($data)) {
+            return 0;
+        }
+
         $values = '';
         foreach ($data as $key => $value) {
-            if ($value!=="")
+            if ($value !== "") {
                 $values .= ($key . "=" . (is_string($value) ? "'$value'" : $value) . ",");
-            else
+            } else {
                 $values .= ($key . "=" . 'null' . ",");
+            }
         }
         $values = rtrim($values, ',');
 
@@ -336,7 +342,7 @@ class BaseDAO extends Model
         return $this->db->update($sql, []);
     }
 
-    public function bulkInsert(array $data)
+    public function bulkInsert(array $data): int
     {
         if (empty($data)) {
             return 0;
@@ -344,6 +350,7 @@ class BaseDAO extends Model
 
         $i = 0;
         $insertData = [];
+        $val = [];
         foreach ($data as $d) {
             $keys = array_keys($d);
             $columns = implode(',', $keys);
@@ -388,7 +395,7 @@ class BaseDAO extends Model
             }
         }
 
-        return $this->db->update($sql, array_merge($where, $data));
+        return $this->db->update($sql, array_merge(is_array($where) ? $where : [], $data));
     }
 
     /**
@@ -416,14 +423,14 @@ class BaseDAO extends Model
             }
         }
 
-        return $this->db->delete($sql, $where);
+        return $this->db->delete($sql, is_array($where) ? $where : []);
     }
 
     /**
      * @param int
      * @return bool
      */
-    public function delete($id)
+    public function delete($id): bool
     {
         $sql = sprintf('DELETE FROM %s WHERE %s=%s',
             $this->table,

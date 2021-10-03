@@ -1,6 +1,6 @@
 <?php
 
-namespace KCoreCommon\Controllers\Common;
+namespace Common;
 
 trait FunctionalTrait
 {

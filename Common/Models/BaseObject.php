@@ -1,17 +1,21 @@
 <?php
 
-namespace KCoreCommon\Models;
+namespace Common\Models;
 
-use App\Controllers\Common\FunctionalTrait;
+use Common\FunctionalTrait;
 
 const SEARCHABLE_COLUMNS = 1;
 const DESC_COLUMN = 2;
 const EXCEL_COLUMN = 3;
 const WHERE = 4;
+const VALIDATE = 5;
+const TABLES = 6;
+const ADDITIONAL_FIELDS = 7;
+const DEFAULT_READ = 8;
+const GLOBAL_FIELDS = 9;
 
 /**
  * Class BaseObject
- * @package App\Models
  */
 abstract class BaseObject
 {
@@ -49,9 +53,9 @@ abstract class BaseObject
 
     /**
      * @param mixed
-     * @return object BaseObject
+     * @return BaseObject
      */
-    public static function getNew($param = null)
+    public static function getNew($param = null): BaseObject
     {
         $class = get_called_class();
         return new $class($param);
@@ -108,6 +112,42 @@ abstract class BaseObject
     public function getSearchableColumns()
     {
         return $this->getMetaByKey(SEARCHABLE_COLUMNS);
+    }
+
+    public function getDefaultRead()
+    {
+        return $this->getMetaByKey(DEFAULT_READ);
+    }
+
+    /**
+     * @return string
+     */
+    public function getGlobalFields(): ?string
+    {
+        return $this->getMetaByKey(GLOBAL_FIELDS);
+    }
+
+    /**
+     * @return array
+     */
+    public function getTables(): ?array
+    {
+        return $this->getMetaByKey(TABLES);
+    }
+
+    public function getWhere()
+    {
+        return $this->getMetaByKey(WHERE);
+    }
+
+    public function getAdditionalFields()
+    {
+        return $this->getMetaByKey(ADDITIONAL_FIELDS);
+    }
+
+    public function getValidate()
+    {
+        return $this->getMetaByKey(VALIDATE);
     }
 
     public function getMetaByKey($key)

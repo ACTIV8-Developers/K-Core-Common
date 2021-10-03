@@ -1,6 +1,6 @@
 <?php
 
-namespace KCoreCommon\Services;
+namespace Common;
 
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;

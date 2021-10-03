@@ -1,42 +1,20 @@
 <?php
 
-namespace KCoreCommon\Controllers;
+namespace Common\Controllers;
 
-use App\Models\DAO\BaseDAO;
-use App\Services\AWS\S3;
-use App\Services\CVParser\CVParser;
-use App\Services\ImagePath\ImagePath;
+use Common\Models\BaseDAO;
 use Carbon\Carbon;
 use Core\Container\Container;
 use Core\Core\Controller;
-use Core\Database\Interfaces\DatabaseInterface;
 use Core\Http\Interfaces\ResponseInterface;
-use Core\Http\Request;
 use Core\Http\Response;
-use Core\Services\JobQueue\JobExecutor;
-use Core\Services\Mailer\Mailer;
 use DateTime;
-use Monolog\Logger;
-use OAuth2\Server;
 use PURL;
 
 /**
- * Class BaseController
- * @property Server oauth
- * @property array user
- * @property array permissions
- * @property Request request
- * @property Mailer mailer
- * @property DatabaseInterface db
- * @property Logger logger
- * @property CVParser CVParser
- * @property S3 s3
- * @property JobExecutor $executor
- * @property ImagePath ImagePath
- *
- * @package App\Controllers
+ * Class RootController
  */
-abstract class BaseController extends Controller
+abstract class RootController extends Controller
 {
     /**
      * BaseController constructor.
@@ -50,6 +28,28 @@ abstract class BaseController extends Controller
 
     /* Responses
     ============================================================ */
+    /**
+     * Set response type to binary file.
+     *
+     * @param $file
+     * @param string $name
+     * @return Response
+     */
+    public function file($file, string $name = "file"): Response
+    {
+        $response = new Response();
+        $response->setHeader('Content-Description', 'File Transfer');
+        $response->setHeader('Content-Type', 'application/pdf');
+        $response->setHeader('Content-Disposition', 'attachment; filename="' . ($name) . '"');
+        $response->setHeader('Expires', '0');
+        $response->setHeader('Cache-Control', 'must-revalidate');
+        $response->setHeader('Pragma', 'public');
+        $response->setHeader('Content-Length', filesize($file));
+        $response->setBody(file_get_contents($file));
+
+        return $response;
+    }
+
     /**
      * Set response type to JSON.
      *
@@ -206,7 +206,6 @@ abstract class BaseController extends Controller
         return filter_var($value, $filter, $option);
     }
 
-
     protected function getAuthorizationHeader(): ?string
     {
         $headers = null;
@@ -348,7 +347,7 @@ abstract class BaseController extends Controller
         return str_replace(API_PREFIX . '/', "", $this->request->getUri());
     }
 
-    protected function beautifyFilename($filename)
+    protected function beautifyFilename($filename): string
     {
         // reduce consecutive characters
         $filename = preg_replace(array(
@@ -368,8 +367,8 @@ abstract class BaseController extends Controller
         // lowercase for windows/unix interoperability http://support.microsoft.com/kb/100625
         $filename = mb_strtolower($filename, mb_detect_encoding($filename));
         // ".file-name.-" becomes "file-name"
-        $filename = trim($filename, '.-');
-        return $filename;
+
+        return trim($filename, '.-');
     }
 
     protected function getFileExtension($filename): string
@@ -383,8 +382,6 @@ abstract class BaseController extends Controller
         return substr(hash('sha512', $value . rand(1, 100)), 0, 24);
     }
 
-    /* Project specific
-    ============================================================ */
     protected function phoneNumber($areaCode, $phoneNumber, $phoneExtension): string
     {
         return ($areaCode ? '(' . $areaCode . ') ' : '') . $phoneNumber . ' ' . $phoneExtension;
@@ -408,7 +405,7 @@ abstract class BaseController extends Controller
         return $queryParam;
     }
 
-    function slugify($string, $separator = '-')
+    protected function slugify($string, $separator = '-')
     {
         $accents_regex = '~&([a-z]{1,2})(?:acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml);~i';
         $special_cases = array('&' => 'and', "'" => '');
@@ -417,5 +414,12 @@ abstract class BaseController extends Controller
         $string = preg_replace($accents_regex, '$1', htmlentities($string, ENT_QUOTES, 'UTF-8'));
         $string = preg_replace("/[^a-z0-9]/u", "$separator", $string);
         return preg_replace("/[$separator]+/u", "$separator", $string);
+    }
+
+    protected function urlExists($url): bool
+    {
+        $urlheaders = get_headers($url);
+        $urlmatches  = preg_grep('/200 ok/i', $urlheaders);
+        return !empty($urlmatches);
     }
 }

@@ -1,7 +1,6 @@
 <?php
 
-
-namespace KCoreCommon\Services;
+namespace Common;
 
 use Core\Container\Container;
 use Core\Container\ContainerAware;
