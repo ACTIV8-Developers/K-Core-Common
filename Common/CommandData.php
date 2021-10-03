@@ -13,7 +13,7 @@ class CommandData implements \ArrayAccess
         $this->data = $data;
     }
 
-    public function cleanData(array $data = [], array $template = []): array
+    public function cleanData(array $data = [], ?array $template = []): array
     {
         foreach ($data as $key => $value) {
             if (!is_array($value)) {
