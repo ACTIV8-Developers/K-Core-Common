@@ -62,6 +62,7 @@ trait ResourceCRUDTrait
         $additionalFields = $model->getAdditionalFields();
 
         $parentResourceKey = $this->getParentResourceKey();
+
         $keys = $model->getTableKeys();
         unset($keys[$parentResourceKey]);
         unset($keys["CompanyID"]);
@@ -315,6 +316,7 @@ trait ResourceCRUDTrait
         $tableName = $model->getTableName();
 
         $parentResourceKey = $this->getParentResourceKey();
+
         $keys = $model->getTableKeys();
         unset($keys[$parentResourceKey]);
         unset($keys["CompanyID"]);
@@ -985,11 +987,6 @@ trait ResourceCRUDTrait
         return $where;
     }
 
-    private function getParentResourceKey()
-    {
-        return null;
-    }
-
     private function fillPlaceholderTables(string $queryParam, BaseObject $model, array $keys, array $tableAliasReplaceMap): string
     {
         foreach ($keys as $tableOrder) {
@@ -1004,5 +1001,10 @@ trait ResourceCRUDTrait
         return implode(", ", str_replace("\n", "", $this->map($additionalFields, function ($val, $i, $k) use ($keys, $model, $tableAliasReplaceMap) {
             return $k . "=" . $this->fillPlaceholderTables($val, $model, $keys, $tableAliasReplaceMap);
         })));
+    }
+
+    protected function getParentResourceKey()
+    {
+        return null;
     }
 }
