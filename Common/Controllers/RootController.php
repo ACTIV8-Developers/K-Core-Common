@@ -34,21 +34,22 @@ abstract class RootController extends Controller
     /**
      * Set response type to binary file.
      *
-     * @param $file
+     * @param $path
      * @param string $name
      * @return Response
      */
-    public function file($file, string $name = "file"): Response
+    public function file($path, string $name = "file"): Response
     {
         $response = new Response();
         $response->setHeader('Content-Description', 'File Transfer');
-        $response->setHeader('Content-Type', 'application/pdf');
-        $response->setHeader('Content-Disposition', 'attachment; filename="' . ($name) . '"');
+        $response->setHeader('Content-Type', 'application/octet-stream');
+        $response->setHeader('Access-Control-Expose-Headers', 'Origin, Authorization, Content-Type, Accept-Ranges');
+        $response->setHeader('Content-Disposition', 'attachment; filename="' . $name . '"');
         $response->setHeader('Expires', '0');
         $response->setHeader('Cache-Control', 'must-revalidate');
         $response->setHeader('Pragma', 'public');
-        $response->setHeader('Content-Length', filesize($file));
-        $response->setBody(file_get_contents($file));
+        $response->setHeader('Content-Length', filesize($path));
+        $response->setBody(file_get_contents($path));
 
         return $response;
     }
