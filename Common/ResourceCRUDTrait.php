@@ -811,7 +811,7 @@ trait ResourceCRUDTrait
      * @param array $defaults
      * @return array
      */
-    private function getRequestFieldsArrayFromModel(BaseObject $model, array $data = [], bool $isUpdate = false, array $defaults = []): array
+    protected function getRequestFieldsArrayFromModel(BaseObject $model, array $data = [], bool $isUpdate = false, array $defaults = []): array
     {
         $parentResourceKey = $this->getParentResourceKey();
 
