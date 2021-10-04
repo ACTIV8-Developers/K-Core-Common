@@ -990,11 +990,12 @@ trait ResourceCRUDTrait
 
     private function fillPlaceholderTables(string $queryParam, BaseObject $model, array $keys, array $tableAliasReplaceMap): string
     {
+        $queryParam = str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $queryParam);
         foreach ($keys as $tableOrder) {
             $m = new $tableOrder();
             $queryParam = str_replace("{{" . $m->getTableName() . "}}", $tableAliasReplaceMap[$m->getTableName()], $queryParam);
         }
-        return str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $queryParam);
+        return $queryParam;
     }
 
     private function fillAdditionalFieldsSelect(array $additionalFields, BaseObject $model, array $keys, array $tableAliasReplaceMap): string
