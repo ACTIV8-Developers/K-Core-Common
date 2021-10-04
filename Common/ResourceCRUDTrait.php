@@ -597,7 +597,8 @@ trait ResourceCRUDTrait
 
         $data = $this->getRequestFieldsArrayFromModel($model, $data, false, $defaults);
 
-        return $resourceDao->bulkInsert($data);
+        $resourceDao->bulkInsert($data);
+        return $this->db->lastInsertId();
     }
 
     public function handleResourceUpdateFromData(BaseDAO $resourceDao, array $data): int
