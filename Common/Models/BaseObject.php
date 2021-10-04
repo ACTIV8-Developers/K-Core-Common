@@ -122,7 +122,7 @@ abstract class BaseObject
     /**
      * @return string
      */
-    public function getGlobalFields(): ?string
+    public function getGlobalFields()
     {
         return $this->getMetaByKey(GLOBAL_FIELDS);
     }

@@ -2,7 +2,7 @@
 
 namespace Common;
 
-class CommandData implements \ArrayAccess
+class CommandData implements \ArrayAccess, \Countable
 {
     private array $data = [];
 
@@ -13,7 +13,7 @@ class CommandData implements \ArrayAccess
         $this->data = $data;
     }
 
-    public function cleanData(array $data = [], ?array $template = []): array
+    public function cleanData(array $data = [], $template = []): array
     {
         foreach ($data as $key => $value) {
             if (!is_array($value)) {
@@ -142,5 +142,10 @@ class CommandData implements \ArrayAccess
         // TODO specific filters, throw exception if not valid
 
         return $value;
+    }
+
+    public function count(): int
+    {
+        return count($this->data);
     }
 }
