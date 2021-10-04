@@ -334,8 +334,8 @@ trait ResourceCRUDTrait
         $tableAliasReplaceMap = [];
         $allAdditionalFieldsMap = $additionalFields;
 
-        $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
-            /** @var BaseObject $model */
+        $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap, $model) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
+            /** @var BaseObject $joinModel */
             $joinModel = new $key();
 
             $joinTablePK = $joinModel->getPrimaryKey();
@@ -347,7 +347,7 @@ trait ResourceCRUDTrait
             $select = "";
             $joinAdditionalFields = array_diff_key($joinAdditionalFields ?? [], $allAdditionalFieldsMap ?? []);
             if (!empty($joinAdditionalFields)) {
-                $select .= "," . $this->fillAdditionalFieldsSelect($joinAdditionalFields, $joinModel, $keys, $tableAliasReplaceMap);
+                $select .= "," . $this->fillAdditionalFieldsSelect($joinAdditionalFields, $model, $keys, $tableAliasReplaceMap);
             }
             $allAdditionalFieldsMap = array_merge($allAdditionalFieldsMap ?? [], $joinAdditionalFields ?? []);
 
@@ -990,12 +990,11 @@ trait ResourceCRUDTrait
 
     private function fillPlaceholderTables(string $queryParam, BaseObject $model, array $keys, array $tableAliasReplaceMap): string
     {
-        $queryParam = str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $queryParam);
         foreach ($keys as $tableOrder) {
             $m = new $tableOrder();
             $queryParam = str_replace("{{" . $m->getTableName() . "}}", $tableAliasReplaceMap[$m->getTableName()], $queryParam);
         }
-        return $queryParam;
+        return str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $queryParam);
     }
 
     private function fillAdditionalFieldsSelect(array $additionalFields, BaseObject $model, array $keys, array $tableAliasReplaceMap): string
