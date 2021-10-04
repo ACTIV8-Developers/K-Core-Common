@@ -646,7 +646,7 @@ trait ResourceCRUDTrait
      * @param array $defaults
      * @return array
      */
-    private function getRequestFieldsFromModel(BaseObject $model, bool $isUpdate = false, array $defaults = []): array
+    protected function getRequestFieldsFromModel(BaseObject $model, bool $isUpdate = false, array $defaults = []): array
     {
         $parentResourceKey = $this->getParentResourceKey();
 
@@ -954,7 +954,7 @@ trait ResourceCRUDTrait
         return $result;
     }
 
-    private function additionalDataProcess($data)
+    protected function additionalDataProcess($data)
     {
         if (isset($data['AddressName']) && !array_key_exists('CompanyName', $data) && array_key_exists('Latitude', $data)) {
             $lnlt = $this->getLatLonFromAddressLine($data);
