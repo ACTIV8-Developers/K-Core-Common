@@ -967,46 +967,6 @@ trait ResourceCRUDTrait
         return $data;
     }
 
-    public function getRadiusQuery(BaseDAO $table, BaseDAO $tableLocation = null): string
-    {
-        $SearchLatitude = $this->get('SearchLatitude', FILTER_SANITIZE_STRING);
-        $SearchLongitude = $this->get('SearchLongitude', FILTER_SANITIZE_STRING);
-        $SearchRadius = $this->get('SearchRadius', FILTER_SANITIZE_NUMBER_INT);
-
-        if ($SearchLatitude && $SearchLongitude && $SearchRadius) {
-            $field = $table->getModel()->getPrimaryKey();
-            $table = $table->getModel()->getTableName();
-            if ($tableLocation) {
-                $tableLocation = $tableLocation->getModel()->getTableName();
-                $where = sprintf($table . "." . $field . " IN (SELECT TOP 1 TruckID FROM " . $tableLocation . " WHERE " . $tableLocation . "." . $field . "=" . $table . "." . $field . " AND SQUARE((69.1 * (CAST(Longitude AS decimal) - %.6f) * cos(%.6f / 57.3))) + SQUARE((69.1 * (CAST(Latitude AS decimal) - %.6f))) < (%.6f * %.6f) ORDER BY " . $tableLocation . ".TruckLocationID DESC)", $SearchLongitude, $SearchLatitude, $SearchLatitude, $SearchRadius, $SearchRadius);
-            } else {
-                $where = sprintf("SQUARE((69.1 * (" . $table . ".Longitude - %.6f) * cos(%.6f / 57.3))) + SQUARE((69.1 * (" . $table . ".Latitude - %.6f))) < (%.6f * %.6f)", $SearchLongitude, $SearchLatitude, $SearchLatitude, $SearchRadius, $SearchRadius);
-            }
-        } else {
-            return "1=1";
-        }
-        return $where;
-    }
-
-    public function getPreferenceQuery(BaseDAO $table): string
-    {
-        $PreferenceTypeID = $this->get('PreferenceTypeID', FILTER_SANITIZE_NUMBER_INT);
-        $PreferenceSubType = $this->get('PreferenceSubType', FILTER_SANITIZE_STRING);
-        $field = $table->getModel()->getPrimaryKey();
-        $table = $table->getModel()->getTableName();
-        $PreferenceSub = explode(",", $PreferenceSubType);
-        $PreferenceSub = implode("','", $PreferenceSub);
-        $PreferenceSub = "'" . $PreferenceSub . "'";
-        $queryParam = '1=1';
-        if ($PreferenceTypeID) {
-            $queryParam .= ' AND ' . $table . '.' . $field . " IN (SELECT " . $field . " FROM tbl_PreferenceTypeItem WHERE PreferenceTypeID=" . $PreferenceTypeID . ")";
-        }
-        if ($PreferenceSubType) {
-            $queryParam .= ' AND ' . $table . '.' . $field . " IN (SELECT " . $field . " FROM tbl_PreferenceTypeItem WHERE PreferenceSubTypeID IN (" . $PreferenceSub . "))";
-        }
-        return $queryParam;
-    }
-
     private function fillPlaceholderTables(string $queryParam, BaseObject $model, array $keys, array $tableAliasReplaceMap): string
     {
         foreach ($keys as $tableOrder) {
