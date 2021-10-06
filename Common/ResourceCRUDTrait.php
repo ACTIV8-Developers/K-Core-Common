@@ -2,6 +2,7 @@
 
 namespace Common;
 
+use App\Controllers\Common\AbstractReports;
 use Common\Models\BaseObject;
 use Common\Models\BaseDAO;
 use Core\Http\Interfaces\ResponseInterface;
@@ -268,10 +269,10 @@ trait ResourceCRUDTrait
         if ($output && ($format === "EMAIL" || $format === "EXCEL")) {
             $report = (new AbstractReports($this->getContainer(), "export", $format));
 
-            $sql->limit($limit);// Check for max limit when performance is tested
-            $sql->start($offset);
-
-            $model = $resourceDao->getModel();
+//            $sql->limit($limit);// Check for max limit when performance is tested
+//            $sql->start($offset);
+$this->logger->info(1, ['trace' => $sql->sql()]);
+//            $model = $resourceDao->getModel();
 
             return $report->generateExel($model, $sql->getAll());
         }
