@@ -988,6 +988,25 @@ trait ResourceCRUDTrait
         return $where;
     }
 
+    public function getPreferenceQuery(BaseDAO $table): string
+    {
+        $PreferenceTypeID = $this->get('PreferenceTypeID', FILTER_SANITIZE_NUMBER_INT);
+        $PreferenceSubType = $this->get('PreferenceSubType', FILTER_SANITIZE_STRING);
+        $field = $table->getModel()->getPrimaryKey();
+        $table = $table->getModel()->getTableName();
+        $PreferenceSub = explode(",", $PreferenceSubType);
+        $PreferenceSub = implode("','", $PreferenceSub);
+        $PreferenceSub = "'" . $PreferenceSub . "'";
+        $queryParam = '1=1';
+        if ($PreferenceTypeID) {
+            $queryParam .= ' AND ' . $table . '.' . $field . " IN (SELECT " . $field . " FROM tbl_PreferenceTypeItem WHERE PreferenceTypeID=" . $PreferenceTypeID . ")";
+        }
+        if ($PreferenceSubType) {
+            $queryParam .= ' AND ' . $table . '.' . $field . " IN (SELECT " . $field . " FROM tbl_PreferenceTypeItem WHERE PreferenceSubTypeID IN (" . $PreferenceSub . "))";
+        }
+        return $queryParam;
+    }
+
     private function fillPlaceholderTables(string $queryParam, BaseObject $model, array $keys, array $tableAliasReplaceMap): string
     {
         foreach ($keys as $tableOrder) {
