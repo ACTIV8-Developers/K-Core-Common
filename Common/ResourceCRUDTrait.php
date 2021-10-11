@@ -61,6 +61,7 @@ trait ResourceCRUDTrait
         $tableName = $model->getTableName();
         $fields = $model->getTableFields();
         $additionalFields = $model->getAdditionalFields();
+        $primaryFields = $model->getTableFields();
 
         $parentResourceKey = $this->getParentResourceKey();
 
@@ -79,7 +80,7 @@ trait ResourceCRUDTrait
         });
 
         $tableAliasReplaceMap = [];
-        $allAdditionalFieldsMap = $additionalFields;
+        $allAdditionalFieldsMap = array_merge($additionalFields ?? [], $primaryFields);
 
         $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
             /** @var BaseObject $model */
@@ -214,7 +215,13 @@ trait ResourceCRUDTrait
                     if (!empty($additionalFields[$key])) {
                         $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap);
                     }
-                    $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $value);
+                    if (str_contains($value, ',')) {
+                        $value = explode(',', $value);
+                        $value = implode("','", $value);
+                        $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
+                    } else {
+                        $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $value);
+                    }
                 }
             }
         }
@@ -271,7 +278,6 @@ trait ResourceCRUDTrait
 
 //            $sql->limit($limit);// Check for max limit when performance is tested
 //            $sql->start($offset);
-$this->logger->info(1, ['trace' => $sql->sql()]);
 //            $model = $resourceDao->getModel();
 
             return $report->generateExel($model, $sql->getAll());
