@@ -69,7 +69,7 @@ trait ResourceCRUDTrait
         unset($keys[$parentResourceKey]);
         unset($keys["CompanyID"]);
 
-        /** Add JOIN part of query, and add to SELECT part according to JOIN tables list
+        /** Gather information about model.
          * =============================================================================== */
         $joins = $this->map($keys, function ($key, $i, $k) use ($resourceDao, $tableName) {
             $model = new $key();
@@ -278,6 +278,7 @@ trait ResourceCRUDTrait
 
 //            $sql->limit($limit);// Check for max limit when performance is tested
 //            $sql->start($offset);
+$this->logger->info(1, ['trace' => $sql->sql()]);
 //            $model = $resourceDao->getModel();
 
             return $report->generateExel($model, $sql->getAll());
