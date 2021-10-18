@@ -81,8 +81,9 @@ trait ResourceCRUDTrait
 
         $tableAliasReplaceMap = [];
         $allAdditionalFieldsMap = array_merge($additionalFields ?? [], $primaryFields);
+        $keysCopy = $keys;
 
-        $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
+        $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap, &$keysCopy) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
             /** @var BaseObject $model */
             $joinModel = new $key();
 
@@ -102,7 +103,9 @@ trait ResourceCRUDTrait
             if (is_array($joinDescColumn)) {
                 return implode(",", $joinDescColumn) . ', CONCAT(' . implode(",' ',", $joinDescColumn) . ') ' . str_replace("ID", "", $joinTablePK) . $select;
             }
-            return sprintf("%s as %s", $joinDescColumn, str_replace("ID", "", $joinTablePK)) . $select;
+            $alias = array_search($key, $keysCopy);
+            unset($keysCopy[$alias]);
+            return sprintf("%s as %s", $joinDescColumn, str_replace("ID", "", $alias)) . $select;
         }));
 
         if (empty($joins)) {
@@ -278,7 +281,6 @@ trait ResourceCRUDTrait
 
 //            $sql->limit($limit);// Check for max limit when performance is tested
 //            $sql->start($offset);
-$this->logger->info(1, ['trace' => $sql->sql()]);
 //            $model = $resourceDao->getModel();
 
             return $report->generateExel($model, $sql->getAll());
