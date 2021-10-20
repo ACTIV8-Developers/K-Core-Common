@@ -80,7 +80,7 @@ trait ResourceCRUDTrait
         });
 
         $tableAliasReplaceMap = [];
-        $allAdditionalFieldsMap = array_merge($additionalFields ?? [], $primaryFields);
+        $allAdditionalFieldsMap = array_merge($primaryFields, $additionalFields ?? []);
 
         $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
             /** @var BaseObject $model */
@@ -93,7 +93,7 @@ trait ResourceCRUDTrait
             $joinAdditionalFields = $joinModel->getAdditionalFields();
 
             $select = "";
-            $joinAdditionalFields = array_diff_key($joinAdditionalFields ?? [], $allAdditionalFieldsMap ?? []);
+            $joinAdditionalFields = array_diff_key($joinAdditionalFields ?? [], $allAdditionalFieldsMap);
             if (!empty($joinAdditionalFields)) {
                 $select .= "," . $this->fillAdditionalFieldsSelect($joinAdditionalFields, $joinModel, $keys, $tableAliasReplaceMap);
             }
@@ -121,7 +121,7 @@ trait ResourceCRUDTrait
 
         $select = $tableName . '.*'
             . (!empty($joinsSelects) ? "," . $joinsSelects : "")
-            . (!empty($additionalFields) ? "," . $this->fillAdditionalFieldsSelect($additionalFields, $model, $keys, $tableAliasReplaceMap) : "");
+            . (!empty($additionalFields) ? "," . $this->fillAdditionalFieldsSelect($additionalFields, $model, $keys, []) : "");
 
         $select = str_replace("[[key]]", $id, $select);
 
@@ -979,13 +979,14 @@ $this->logger->info(1, ['trace' => $sql->sql()]);
     {
         foreach ($keys as $tableOrder) {
             $m = new $tableOrder();
-            $queryParam = str_replace("{{" . $m->getTableName() . "}}", $tableAliasReplaceMap[$m->getTableName()], $queryParam);
+            $queryParam = str_replace("{{" . $m->getTableName() . "}}", !empty($tableAliasReplaceMap) ? $tableAliasReplaceMap[$m->getTableName()] : $m->getTableName(), $queryParam);
         }
         return str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $queryParam);
     }
 
     private function fillAdditionalFieldsSelect(array $additionalFields, BaseObject $model, array $keys, array $tableAliasReplaceMap): string
     {
+        $this->logger->info(1, ['trace' => $additionalFields, 'pera' => $model, 'zika' => $keys, 'mika' => $tableAliasReplaceMap]);
         return implode(", ", str_replace("\n", "", $this->map($additionalFields, function ($val, $i, $k) use ($keys, $model, $tableAliasReplaceMap) {
             return $k . "=" . $this->fillPlaceholderTables($val, $model, $keys, $tableAliasReplaceMap);
         })));
