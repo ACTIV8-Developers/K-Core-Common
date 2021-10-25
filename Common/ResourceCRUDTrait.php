@@ -451,6 +451,11 @@ trait ResourceCRUDTrait
     /** Set of functions used for automatic CREATE, UPDATE, DELETE operations on a single model based on HTTP Request object
      * ======================================================================== */
 
+    /**
+     * @param BaseDAO $resourceDao
+     * @param array $defaults
+     * @return false|int|null
+     */
     public function handleResourceCreate(BaseDAO $resourceDao, $defaults = [])
     {
         $model = $resourceDao->getModel();
@@ -511,6 +516,10 @@ trait ResourceCRUDTrait
         return $resourceDao->updateWhere($where, $data);
     }
 
+    /**
+     * @param BaseDAO $resourceDao
+     * @return int
+     */
     public function handleBulkResourceUpdate(BaseDAO $resourceDao): int
     {
         $user = $this->user;
@@ -582,6 +591,12 @@ trait ResourceCRUDTrait
     /** Set of functions used for automatic CREATE, UPDATE, DELETE operations on a single model based on provided array of data
      * ======================================================================== */
 
+    /**
+     * @param BaseDAO $resourceDao
+     * @param array $data
+     * @param array $defaults
+     * @return int
+     */
     public function handleResourceCreateFromData(BaseDAO $resourceDao, array $data, array $defaults = []): int
     {
         $model = $resourceDao->getModel();
