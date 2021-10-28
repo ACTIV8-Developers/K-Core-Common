@@ -100,11 +100,11 @@ trait ResourceCRUDTrait
             }
             $allAdditionalFieldsMap = array_merge($allAdditionalFieldsMap ?? [], $joinAdditionalFields ?? []);
 
-            if (is_array($joinDescColumn)) {
-                return implode(",", $joinDescColumn) . ', CONCAT(' . implode(",' ',", $joinDescColumn) . ') ' . str_replace("ID", "", $joinTablePK) . $select;
-            }
             $alias = array_search($key, $keysCopy);
             unset($keysCopy[$alias]);
+            if (is_array($joinDescColumn)) {
+                return implode(",", $joinDescColumn) . ', CONCAT(' . implode(",' ',", $joinDescColumn) . ') ' . str_replace("ID", "", $alias) . $select;
+            }
             return sprintf("%s as %s", $joinDescColumn, str_replace("ID", "", $alias)) . $select;
         }));
 
