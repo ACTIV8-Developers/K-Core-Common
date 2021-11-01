@@ -255,6 +255,7 @@ trait ResourceCRUDTrait
          * =============================================================================== */
         if (!empty($sortBy) && $sort) {
             if (!empty($additionalFields[$sortBy])) {
+                $additionalFields[$sortBy] = str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $additionalFields[$sortBy]);
                 $sortBy = $this->fillPlaceholderTables($additionalFields[$sortBy], $model, $keys, $tableAliasReplaceMap);
             }
             $sql->orderBy($sortBy);
