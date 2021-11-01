@@ -129,6 +129,10 @@ class CommandData implements \ArrayAccess, \Countable
 
     protected function clean($value, $type)
     {
+        if (!$value && !$type) {
+            return null;
+        }
+
         if (strpos($type, 'int') === 0) {
             $value = $this->filterVar($value, FILTER_SANITIZE_NUMBER_INT);
         } else if (strpos($type, 'decimal') === 0) {

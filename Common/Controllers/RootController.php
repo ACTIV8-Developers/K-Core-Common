@@ -83,7 +83,7 @@ abstract class RootController extends Controller
         return $this->json($result, $code);
     }
 
-    public function jsonCreate($opResult, $code = 201, $codeError = 500, $msgOK = 'OK', $msgError = 'ERROR')
+    public function jsonCreate($opResult, $code = 201, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
     {
         return $this->jsonResponse($opResult, $code, $codeError, $msgOK, $msgError);
     }
