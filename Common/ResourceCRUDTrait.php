@@ -100,11 +100,11 @@ trait ResourceCRUDTrait
             }
             $allAdditionalFieldsMap = array_merge($allAdditionalFieldsMap ?? [], $joinAdditionalFields ?? []);
 
-            if (is_array($joinDescColumn)) {
-                return implode(",", $joinDescColumn) . ', CONCAT(' . implode(",' ',", $joinDescColumn) . ') ' . str_replace("ID", "", $joinTablePK) . $select;
-            }
             $alias = array_search($key, $keysCopy);
             unset($keysCopy[$alias]);
+            if (is_array($joinDescColumn)) {
+                return implode(",", $joinDescColumn) . ', CONCAT(' . implode(",' ',", $joinDescColumn) . ') ' . str_replace("ID", "", $alias) . $select;
+            }
             return sprintf("%s as %s", $joinDescColumn, str_replace("ID", "", $alias)) . $select;
         }));
 
@@ -451,6 +451,11 @@ trait ResourceCRUDTrait
     /** Set of functions used for automatic CREATE, UPDATE, DELETE operations on a single model based on HTTP Request object
      * ======================================================================== */
 
+    /**
+     * @param BaseDAO $resourceDao
+     * @param array $defaults
+     * @return false|int|null
+     */
     public function handleResourceCreate(BaseDAO $resourceDao, $defaults = [])
     {
         $model = $resourceDao->getModel();
@@ -511,6 +516,10 @@ trait ResourceCRUDTrait
         return $resourceDao->updateWhere($where, $data);
     }
 
+    /**
+     * @param BaseDAO $resourceDao
+     * @return int
+     */
     public function handleBulkResourceUpdate(BaseDAO $resourceDao): int
     {
         $user = $this->user;
@@ -582,6 +591,12 @@ trait ResourceCRUDTrait
     /** Set of functions used for automatic CREATE, UPDATE, DELETE operations on a single model based on provided array of data
      * ======================================================================== */
 
+    /**
+     * @param BaseDAO $resourceDao
+     * @param array $data
+     * @param array $defaults
+     * @return int
+     */
     public function handleResourceCreateFromData(BaseDAO $resourceDao, array $data, array $defaults = []): int
     {
         $model = $resourceDao->getModel();
