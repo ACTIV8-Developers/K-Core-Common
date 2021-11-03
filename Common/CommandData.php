@@ -129,7 +129,7 @@ class CommandData implements \ArrayAccess, \Countable
 
     protected function clean($value, $type)
     {
-        if (!$value && !$type) {
+        if ($value !== 0 && !$value && !$type) {
             return null;
         }
 
