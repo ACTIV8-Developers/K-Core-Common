@@ -420,8 +420,8 @@ trait ResourceCRUDTrait
          * =============================================================================== */
         foreach ($model->getTables() ?? [] as $table => $primary) {
             $m = new $table();
-            $result[str_replace("tbl_", "", $m->getTableName())] =
-                $this->db->query("SELECT * FROM " . $m->getTableName() . " WHERE " . $primary . "=" . $result[$primary])->fetchAll();
+            $result[str_replace("tbl_", "", $m->getTableName())] = $this->handleResourceRead($this->getDaoForObject($table), false, null,  $primary . "=" . $result[$primary])['list'];
+//                $this->db->query("SELECT * FROM " . $m->getTableName() . " WHERE " . $primary . "=" . $result[$primary])->fetchAll();
         }
 
         foreach ($keys as $key => $value) {
