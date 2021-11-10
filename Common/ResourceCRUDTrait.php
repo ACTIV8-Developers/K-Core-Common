@@ -385,7 +385,7 @@ trait ResourceCRUDTrait
             . (!empty($additionalFields) ? "," . implode(", ", str_replace("\n", "", $this->map($additionalFields, function ($val, $i, $k) {
                     return $k . "=" . $val;
                 }))) : "");
-
+$this->logger->info(1, ['trace' => $select]);
         $c = 1;
         foreach ($keys as $t => $tableOrder) {
             $m = new $tableOrder();
@@ -420,8 +420,8 @@ trait ResourceCRUDTrait
          * =============================================================================== */
         foreach ($model->getTables() ?? [] as $table => $primary) {
             $m = new $table();
-            $result[str_replace("tbl_", "", $m->getTableName())] = $this->handleResourceRead($this->getDaoForObject($table), false, null,  $primary . "=" . $result[$primary])['list'];
-//                $this->db->query("SELECT * FROM " . $m->getTableName() . " WHERE " . $primary . "=" . $result[$primary])->fetchAll();
+            $result[str_replace("tbl_", "", $m->getTableName())] = $this->handleResourceRead($this->getDaoForObject($table), false, $primary,  null, $result[$primary])['list'];
+//            $result[str_replace("tbl_", "", $m->getTableName())] = $this->db->query("SELECT * FROM " . $m->getTableName() . " WHERE " . $primary . "=" . $result[$primary])->fetchAll();
         }
 
         foreach ($keys as $key => $value) {
