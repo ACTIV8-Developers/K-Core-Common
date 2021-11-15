@@ -195,7 +195,16 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
 
         $data = $this->additionalDataProcess($data);
 
-        return $this->db->update($id, $data);
+        $values = '';
+        foreach ($data as $key => $value) {
+            $values .= ($key . "=:" . $key . ",");
+        }
+        $values = rtrim($values, ',');
+
+        $sql = sprintf("UPDATE %s SET %s WHERE %s=%s",
+            $model->getTableName(), $values, $model->getPrimaryKey(), is_string($id) ? "'$id'" : $id);
+
+        return $this->db->update($sql, $data);
     }
 
     public function deleteWhere(BaseObject $model, string $key, string $value): int
