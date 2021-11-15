@@ -5,6 +5,7 @@ namespace Common\Controllers;
 use Common\DAOTrait;
 use Common\Models\BaseDAO;
 use Carbon\Carbon;
+use Common\OutputResult;
 use Core\Container\Container;
 use Core\Core\Controller;
 use Core\Http\Interfaces\ResponseInterface;
@@ -72,8 +73,25 @@ abstract class RootController extends Controller
         return $response;
     }
 
+    public function jsonOutput($data, $code = 200, $codeFailure = 400, int $options = 0)
+    {
+        return $this->json([
+            'status' => $data->getStatus() ? 1 : 0,
+            'message' => $data->getMessage(),
+            'data' => $data->getData()
+        ], $data->isOk() ? $code : $codeFailure, $options);
+    }
+
     public function jsonData($data, $code = 200)
     {
+        if ($data instanceof OutputResult) {
+            $this->json([
+                'status' => $data->isOk() ? 1 : 0,
+                'message' => $data->getMessage(),
+                'data' => $data->getData()
+            ], $code);
+        }
+
         $result = [
             'status' => 0,
             'message' => "OK",
@@ -85,16 +103,37 @@ abstract class RootController extends Controller
 
     public function jsonCreate($opResult, $code = 201, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
     {
+        if ($opResult instanceof OutputResult) {
+            $this->json([
+                'status' => $opResult->isOk() ? 1 : 0,
+                'message' => $opResult->getMessage(),
+                'data' => $opResult->getData()
+            ], $opResult->isOk() ? $code : 400);
+        }
         return $this->jsonResponse($opResult, $code, $codeError, $msgOK, $msgError);
     }
 
     public function jsonUpdate($opResult, $code = 200, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
     {
+        if ($opResult instanceof OutputResult) {
+            $this->json([
+                'status' => $opResult->isOk() ? 1 : 0,
+                'message' => $opResult->getMessage(),
+                'data' => $opResult->getData()
+            ], $opResult->isOk() ? $code : 400);
+        }
         return $this->jsonResponse($opResult, $code, $codeError, $msgOK, $msgError);
     }
 
     public function jsonDelete($opResult, $code = 200, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
     {
+        if ($opResult instanceof OutputResult) {
+            $this->json([
+                'status' => $opResult->isOk() ? 1 : 0,
+                'message' => $opResult->getMessage(),
+                'data' => $opResult->getData()
+            ], $opResult->isOk() ? $code : 400);
+        }
         return $this->jsonResponse($opResult, $code, $codeError, $msgOK, $msgError);
     }
 
