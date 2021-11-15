@@ -29,7 +29,7 @@ class OutputResult
 
     public static function successWithID(int $id): OutputResult
     {
-        return new OutputResult(false, 'OK', [
+        return new OutputResult(true, 'OK', [
             'id' => $id
         ]);
     }
