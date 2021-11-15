@@ -85,7 +85,7 @@ abstract class RootController extends Controller
     public function jsonData($data, $code = 200)
     {
         if ($data instanceof OutputResult) {
-            $this->json([
+            return $this->json([
                 'status' => $data->isOk() ? 1 : 0,
                 'message' => $data->getMessage(),
                 'data' => $data->getData()
@@ -104,7 +104,7 @@ abstract class RootController extends Controller
     public function jsonCreate($opResult, $code = 201, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
     {
         if ($opResult instanceof OutputResult) {
-            $this->json([
+            return $this->json([
                 'status' => $opResult->isOk() ? 1 : 0,
                 'message' => $opResult->getMessage(),
                 'data' => $opResult->getData()
@@ -116,7 +116,7 @@ abstract class RootController extends Controller
     public function jsonUpdate($opResult, $code = 200, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
     {
         if ($opResult instanceof OutputResult) {
-            $this->json([
+            return $this->json([
                 'status' => $opResult->isOk() ? 1 : 0,
                 'message' => $opResult->getMessage(),
                 'data' => $opResult->getData()
@@ -128,7 +128,7 @@ abstract class RootController extends Controller
     public function jsonDelete($opResult, $code = 200, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
     {
         if ($opResult instanceof OutputResult) {
-            $this->json([
+            return $this->json([
                 'status' => $opResult->isOk() ? 1 : 0,
                 'message' => $opResult->getMessage(),
                 'data' => $opResult->getData()

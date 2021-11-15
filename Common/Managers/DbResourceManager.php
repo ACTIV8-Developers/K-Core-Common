@@ -204,6 +204,11 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         $sql = sprintf("UPDATE %s SET %s WHERE %s=%s",
             $model->getTableName(), $values, $model->getPrimaryKey(), is_string($id) ? "'$id'" : $id);
 
+        $this->logger->info("updateFromData", [
+            'sql' => $sql,
+            'data' => $data
+        ]);
+
         return $this->db->update($sql, $data);
     }
 
