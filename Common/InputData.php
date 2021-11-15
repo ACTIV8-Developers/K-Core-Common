@@ -2,7 +2,7 @@
 
 namespace Common;
 
-class CommandData implements \ArrayAccess, \Countable
+class InputData implements \ArrayAccess, \Countable
 {
     private array $data = [];
 
