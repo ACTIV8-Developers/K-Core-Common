@@ -182,6 +182,28 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         return 0;
     }
 
+    public function updateFromData(BaseObject $model, int $id, array $data): int
+    {
+        $fields = $model->getTableFields();
+
+        if (isset($fields['UpdatedByContactID'])) {
+            $data['UpdatedByContactID'] = $this->IAM->getContactID();
+        }
+        if (isset($fields['CreateUpdateDate'])) {
+            $data['CreateUpdateDate'] = $this->currentDateTime();
+        }
+
+        $data = $this->additionalDataProcess($data);
+
+        return $this->db->update($id, $data);
+    }
+
+    public function deleteWhere(BaseObject $model, string $key, string $value): int
+    {
+        return 1;
+    }
+
+
     /**
      * This function will fill, and return, an array with values required to create/update given table model based on the passed array data.
      * Function will iterate through all fields from the given model, and will try to fill data unless it is
@@ -243,27 +265,6 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         }
 
         return $data;
-    }
-
-    public function updateFromData(BaseObject $model, int $id, array $data): int
-    {
-        $fields = $model->getTableFields();
-
-        if (isset($fields['UpdatedByContactID'])) {
-            $data['UpdatedByContactID'] = $this->IAM->getContactID();
-        }
-        if (isset($fields['CreateUpdateDate'])) {
-            $data['CreateUpdateDate'] = $this->currentDateTime();
-        }
-
-        $data = $this->additionalDataProcess($data);
-
-        return $this->db->update($id, $data);
-    }
-
-    public function deleteWhere(BaseObject $model, string $key, string $value): int
-    {
-        return 1;
     }
 
     private function fillPlaceholderTables(string $queryParam, BaseObject $model, array $keys, array $tableAliasReplaceMap): string
