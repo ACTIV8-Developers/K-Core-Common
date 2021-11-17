@@ -262,6 +262,11 @@ class BaseDAO extends Model
 
         $result = $this->db->select($sql, $values);
 
+        $this->logger->info("DAO", [
+            'sql' => $sql,
+            'result' => $result
+        ]);
+
         return $result[0]['cnt'] ?? 0;
     }
 
