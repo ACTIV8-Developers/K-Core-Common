@@ -6,9 +6,9 @@ use Common\Models\BaseObject;
 
 interface ResourceManagerInterface
 {
-    public function readList(BaseObject $model, $where = null);
+    public function readListBy(BaseObject $model, array $input, array $where): array;
 
-    public function readListBy(BaseObject $model, string $key, string $value);
+    public function readList(BaseObject $model, $where = null);
 
     public function findBy(BaseObject $model, string $key, string $value);
 

@@ -7,6 +7,7 @@ use App\Services\IAM\Interfaces\IAMInterface;
 use Common\Controllers\RootController;
 use Common\DAOTrait;
 use Common\Managers\Interfaces\ResourceManagerInterface;
+use Common\Models\BaseDAO;
 use Common\Models\BaseObject;
 use Common\ResourceCRUDTrait;
 use Core\Container\Container;
@@ -27,6 +28,217 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         $this->db = $db;
     }
 
+    public function readListBy(BaseObject $model, array $input, array $where): array
+    {
+        /** Read user input from Request object.
+         * =============================================================================== */
+        $query = $input['query'];
+
+        $sort = $input['sort'];
+        $sortBy = $input['sortBy'];
+
+        $limit = $input['limit'] ?? 10;
+        $offset = $input['offset'] ?? 0;
+
+        $archived = $input['archived'] ?? 0;;
+
+        $searchFields = json_decode($input['searchFields'], 1);
+
+        /** Gather information about model.
+         * =============================================================================== */
+        $tableName = $model->getTableName();
+        $fields = $model->getTableFields();
+        $additionalFields = $model->getAdditionalFields();
+        $primaryFields = $model->getTableFields();
+
+        $parentResourceKey = $this->getParentResourceKey();
+
+        $keys = $model->getTableKeys();
+        unset($keys[$parentResourceKey]);
+        unset($keys["CompanyID"]);
+
+        /** Gather information about model.
+         * =============================================================================== */
+        $joins = $this->map($keys, function ($key, $i, $k) use ($model, $tableName) {
+            $joinTableName = $model->getTableName();
+            $joinTablePK = $model->getPrimaryKey();
+
+            return sprintf("LEFT JOIN %s as t%d ON t%d.%s=%s.%s", $joinTableName, $i + 1, $i + 1, $joinTablePK, $tableName, $k);
+        });
+
+        $tableAliasReplaceMap = [];
+        $allAdditionalFieldsMap = array_merge($primaryFields, $additionalFields ?? []);
+        $keysCopy = $keys;
+
+        $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap, &$keysCopy) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
+            /** @var BaseObject $model */
+            $joinModel = new $key();
+
+            $joinDescColumn = $joinModel->getDescColumn("t" . ($i + 1));
+            $joinAlias = "t" . ($i + 1);
+            $tableAliasReplaceMap[$joinModel->getTableName()] = $joinAlias;
+            $joinAdditionalFields = $joinModel->getAdditionalFields();
+
+            $select = "";
+            $joinAdditionalFields = array_diff_key($joinAdditionalFields ?? [], $allAdditionalFieldsMap);
+            if (!empty($joinAdditionalFields)) {
+                $select .= "," . $this->fillAdditionalFieldsSelect($joinAdditionalFields, $joinModel, $keys, $tableAliasReplaceMap);
+            }
+            $allAdditionalFieldsMap = array_merge($allAdditionalFieldsMap ?? [], $joinAdditionalFields ?? []);
+
+            $alias = array_search($key, $keysCopy);
+            unset($keysCopy[$alias]);
+            if (is_array($joinDescColumn)) {
+                return implode(",", $joinDescColumn) . ', CONCAT(' . implode(",' ',", $joinDescColumn) . ') ' . str_replace("ID", "", $alias) . $select;
+            }
+            return sprintf("%s as %s", $joinDescColumn, str_replace("ID", "", $alias)) . $select;
+        }));
+
+        if (empty($joins)) {
+            $joins = null;
+        } else {
+            $joins = substr(implode(" ", $joins), 9);
+        }
+
+        /** Add SELECT part of the query.
+         * =============================================================================== */
+        foreach ($additionalFields ?? [] as $k => $v) {
+            if ($k == $v) {
+                unset($additionalFields[$k]);
+            }
+        }
+
+        $select = $tableName . '.*'
+            . (!empty($joinsSelects) ? "," . $joinsSelects : "")
+            . (!empty($additionalFields) ? "," . $this->fillAdditionalFieldsSelect($additionalFields, $model, $keys, []) : "");
+
+        $sql = (new BaseDAO($model))
+            ->select($select)
+            ->join($joins);
+        $sql->setContainer($this->container);
+
+        /** Add to WHERE clause for tables that are part of the multi tenant system (have CompanyID in a field list).
+         * =============================================================================== */
+        if (isset($fields["CompanyID"])) {
+            $queryParam = sprintf("%s.CompanyID=%d", $tableName, $this->IAM->getCompanyID());
+        } else {
+            $queryParam = "1=1";
+        }
+
+        /** Add to WHERE clause for tables that support soft delete feature (have ArchivedDate in a field list).
+         * =============================================================================== */
+        if (isset($fields['ArchivedDate'])) {
+            if (!$archived) {
+                $queryParam .= sprintf(" AND %s.ArchivedDate IS NULL", $tableName);
+            }
+        }
+
+        /** Add standard text query fields to WHERE clause.
+         * =============================================================================== */
+        if (!empty($query)) {
+            $searchableCol = $model->getSearchableColumns();
+
+            if (isset($searchableCol[0])) {
+                $queryParam .= (empty($queryParam)) ? " ( " : " AND ( ";
+
+                foreach ($searchableCol as $value) {
+
+                    $chunks = explode(' ', $query);
+                    foreach ($chunks as $chunk) {
+                        $queryParam .= sprintf("(%s.%s LIKE '%%%s%%') OR ", $tableName, $value, $chunk);
+                    }
+                    $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
+                }
+                $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " ) ";
+            }
+
+            if (!empty($keys)) {
+                $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
+                $i = 1;
+                foreach ($keys as $key) {
+                    $joinModel = new $key();
+                    $searchableCol = $joinModel->getSearchableColumns();
+                    if (isset($searchableCol[0])) {
+                        foreach ($searchableCol as $value) {
+                            $chunks = explode(' ', $query);
+                            foreach ($chunks as $chunk) {
+                                $queryParam .= sprintf(" (%s.%s LIKE '%%%s%%') OR ", "t" . $i, $value, $chunk);
+                            }
+                            $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
+                        }
+                    }
+                    $i++;
+                }
+                $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " ) ";
+            }
+        }
+
+        /** Add special fields to be a part of WHERE clause.
+         * =============================================================================== */
+        if ($searchFields) {
+            foreach ($searchFields as $key => $value) {
+                if ($value) {
+                    $searchField = sprintf("%s.%s", $tableName, $key);
+                    if (!empty($additionalFields[$key])) {
+                        $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap);
+                    }
+                    if (str_contains($value, ',')) {
+                        $value = explode(',', $value);
+                        $value = implode("','", $value);
+                        $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
+                    } else {
+                        $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $value);
+                    }
+                }
+            }
+        }
+
+        /** Add exclude part of the WHERE clause.
+         * =============================================================================== */
+        if (!empty($ExcludeIDs)) {
+            $queryParam .= sprintf(" AND %s.%s NOT IN (%s)", $tableName, $model->getPrimaryKey(), $ExcludeIDs);
+        }
+
+        /** Replace placeholders in the final WHERE string.
+         * =============================================================================== */
+        $queryParam = $this->fillPlaceholderTables($queryParam, $model, $keys, $tableAliasReplaceMap);
+
+        /** Add WHERE part of the query.
+         * =============================================================================== */
+        foreach ($where as $k => $v) {
+            $queryParam .= sprintf("%s.%d=%d", $model->getTableName(), $k, $v);
+        }
+
+        if (!empty($queryParam)) {
+            $sql->where($queryParam);
+        }
+
+        /** Add SORT part of the query.
+         * =============================================================================== */
+        if (!empty($sortBy) && $sort) {
+            if (!empty($additionalFields[$sortBy])) {
+                $additionalFields[$sortBy] = str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $additionalFields[$sortBy]);
+                $sortBy = $this->fillPlaceholderTables($additionalFields[$sortBy], $model, $keys, $tableAliasReplaceMap);
+            }
+            $sql->orderBy($sortBy);
+            $sql->order($sort);
+        }
+
+        /** Add pagination part of the query.
+         * =============================================================================== */
+        if (($limit !== null) && ($offset !== null)) {
+            $sql->limit($limit);
+            $sql->start($offset);
+        }
+
+        return [
+            'list' => $sql->getAll(),
+            'count' => $sql->count(),
+            'sql' => $sql->sql()
+        ];
+    }
+
+    // Deprecated will be removed
     public function readList(BaseObject $model, $where = null)
     {
         return $this->handleResourceRead(
@@ -35,13 +247,6 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
             null,
             $where
         );
-    }
-
-    public function readListBy(BaseObject $model, string $key, string $value)
-    {
-        return $this->getDaoForObject(get_class($model))
-            ->where(sprintf("%s.%s='%s'", $model->getTableName(), $key, $value))
-            ->getAll();
     }
 
     public function findBy(BaseObject $model, string $key, string $value)
