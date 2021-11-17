@@ -59,7 +59,8 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
 
         /** Gather information about model.
          * =============================================================================== */
-        $joins = $this->map($keys, function ($key, $i, $k) use ($model, $tableName) {
+        $joins = $this->map($keys, function ($key, $i, $k) use ($tableName) {
+            $model = new $key();
             $joinTableName = $model->getTableName();
             $joinTablePK = $model->getPrimaryKey();
 
