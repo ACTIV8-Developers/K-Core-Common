@@ -182,6 +182,33 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         return 0;
     }
 
+    public function createBulkFromData(BaseObject $model, array $data = []): int
+    {
+        if (empty($data)) {
+            return 0;
+        }
+
+        $i = 0;
+        $insertData = [];
+        $val = [];
+        foreach ($data as $d) {
+            $keys = array_keys($d);
+            $columns = implode(',', $keys);
+            $values = [];
+            foreach ($keys as $k) {
+                $key = "K" . ($i++);
+                $values[] = ":".$key;
+                $insertData[$key] = $d[$k];
+            }
+            $val[] = "(" . implode(',', $values) . ")";
+            // $this->sqlEscape($val);
+        }
+        $val = implode(",", $val);
+        $sql = sprintf("INSERT INTO " . $model->getTableName() . " (%s) VALUES %s", $columns, $val);
+
+        return $this->db->insert($sql, $insertData);
+    }
+
     public function updateFromData(BaseObject $model, int $id, array $data): int
     {
         $fields = $model->getTableFields();
@@ -192,6 +219,8 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         if (isset($fields['CreateUpdateDate'])) {
             $data['CreateUpdateDate'] = $this->currentDateTime();
         }
+
+        // TODO Check if company matches
 
         $data = $this->additionalDataProcess($data);
 
@@ -276,7 +305,6 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
             $data[$name] = $value;
 
             if ((strpos($type, 'NULL') === false) && ($value === null)) {
-
                 return []; // Exit function with no result if one of required fields is missing
             }
         }

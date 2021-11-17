@@ -260,7 +260,12 @@ class BaseDAO extends Model
             }
         }
 
-        return $this->db->select($sql, $values)[0]['cnt'];
+        $result = $this->db->select($sql, $values);
+
+        \Monolog\Handler\error_log($sql);
+        \Monolog\Handler\error_log(print_r($result, 1));
+
+        return $result[0]['cnt'] ?? 0;
     }
 
     /**

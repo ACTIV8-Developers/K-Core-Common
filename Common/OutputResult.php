@@ -17,7 +17,7 @@ class OutputResult
         $this->data = $data;
     }
 
-    public static function successWithData(array $data = []): OutputResult
+    public static function successWithData($data = []): OutputResult
     {
         return new OutputResult(true, 'OK', $data);
     }
