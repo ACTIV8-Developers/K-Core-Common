@@ -35,7 +35,7 @@ trait ResourceCRUDTrait
          * =============================================================================== */
         $user = $this->user;
 
-        $CompanyID = $user['Contact']['CompanyID'];
+        $CompanyID = $this->IAM->getCompanyID();
 
         $id = $this->get('id', FILTER_SANITIZE_NUMBER_INT);
 

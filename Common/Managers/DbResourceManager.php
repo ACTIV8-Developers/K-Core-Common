@@ -32,17 +32,17 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
     {
         /** Read user input from Request object.
          * =============================================================================== */
-        $query = $input['query'];
+        $query = $input['query'] ?? "";
 
-        $sort = $input['sort'];
-        $sortBy = $input['sortBy'];
+        $sort = $input['sort'] ?? "";
+        $sortBy = $input['sortBy'] ?? "";
 
         $limit = $input['limit'] ?? 10;
         $offset = $input['offset'] ?? 0;
 
-        $archived = $input['archived'] ?? 0;;
+        $archived = $input['archived'] ?? 0;
 
-        $searchFields = json_decode($input['searchFields'], 1);
+        $searchFields = json_decode($input['searchFields'] ?? "", 1);
 
         /** Gather information about model.
          * =============================================================================== */
