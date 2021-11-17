@@ -206,7 +206,7 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         /** Add WHERE part of the query.
          * =============================================================================== */
         foreach ($where as $k => $v) {
-            $queryParam .= sprintf(" AND %s.%d=%d", $model->getTableName(), $k, $v);
+            $queryParam .= sprintf(" AND %s.%s=%d", $model->getTableName(), $k, $v);
         }
 
         if (!empty($queryParam)) {
