@@ -252,15 +252,19 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
 
     public function findBy(BaseObject $model, string $key, string $value)
     {
-        return $this->findWhere($model, sprintf("%s.%s='%s'", $model->getTableName(), $key, $value));
+        return $this->findWhere($model, [
+            $key => $value
+        ]);
     }
 
     public function findByID(BaseObject $model, int $id)
     {
-        return $this->findWhere($model, sprintf("%s.%s='%d'", $model->getTableName(), $model->getPrimaryKey(), $id));
+        return $this->findWhere($model, [
+            $model->getPrimaryKey() => $id
+        ]);
     }
 
-    public function findWhere(BaseObject $model, string $where)
+    public function findWhere(BaseObject $model, array $where)
     {
         /** Gather information about model.
          * =============================================================================== */
@@ -334,7 +338,15 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         }
 
         $select = str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $select);
-        $sql = "SELECT " . $select . " FROM " . $model->getTableName() . " LEFT JOIN " . $joins . sprintf(" WHERE %s", $where);
+
+        /** Add WHERE part of the query.
+         * =============================================================================== */
+        $queryParam = "1=1";
+        foreach ($where as $k => $v) {
+            $queryParam .= sprintf(" AND %s.%s=%d", $model->getTableName(), $k, $v);
+        }
+
+        $sql = "SELECT " . $select . " FROM " . $model->getTableName() . " LEFT JOIN " . $joins . sprintf(" WHERE %s", $queryParam);
 
         $result = $this->db->select($sql);
         if (isset($result[0])) {

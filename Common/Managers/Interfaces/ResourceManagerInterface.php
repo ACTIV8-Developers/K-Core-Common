@@ -14,7 +14,7 @@ interface ResourceManagerInterface
 
     public function findByID(BaseObject $model, int $id);
 
-    public function findWhere(BaseObject $model, string $where);
+    public function findWhere(BaseObject $model, array $where);
 
     /**
      * Creates object in the database based on the passed array values.
