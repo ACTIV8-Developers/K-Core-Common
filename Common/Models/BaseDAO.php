@@ -262,8 +262,8 @@ class BaseDAO extends Model
 
         $result = $this->db->select($sql, $values);
 
-        \Monolog\Handler\error_log($sql);
-        \Monolog\Handler\error_log(print_r($result, 1));
+        error_log($sql);
+        error_log(print_r($result, 1));
 
         return $result[0]['cnt'] ?? 0;
     }
