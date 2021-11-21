@@ -6,6 +6,14 @@ use Common\Models\BaseObject;
 
 interface ResourceManagerInterface
 {
+    /**
+     * Get list of objects with the related/joined data.
+     * Queries for CompanyID automatically if present in a model.
+     * @param BaseObject $model
+     * @param array $input - query, sort, sortBy, offset, limit, archived (if applicable table has ArchivedDate field), searchFields
+     * @param array $where - key/value conditions
+     * @return array
+     */
     public function readListBy(BaseObject $model, array $input, array $where): array;
 
     public function readList(BaseObject $model, $where = null);
@@ -26,6 +34,12 @@ interface ResourceManagerInterface
      */
     public function createFromData(BaseObject $model, array $data): int;
 
+    /**
+     * Same as createFromData but for multiple inserts.
+     * @param BaseObject $model
+     * @param array $data
+     * @return int
+     */
     public function createBulkFromData(BaseObject $model, array $data): int;
 
     /**
