@@ -37,8 +37,8 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         $sort = $input['sort'] ?? "";
         $sortBy = $input['sortBy'] ?? "";
 
-        $limit = $input['limit'] ?? 10;
-        $offset = $input['offset'] ?? 0;
+        $limit = $input['limit'] ?? null;
+        $offset = $input['offset'] ?? null;
 
         $archived = $input['archived'] ?? 0;
 

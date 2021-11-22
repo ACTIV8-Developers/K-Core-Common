@@ -73,7 +73,7 @@ abstract class RootController extends Controller
         return $response;
     }
 
-    public function jsonOutput($data, $code = 200, $codeFailure = 400, int $options = 0)
+    public function jsonOutput(OutputResult $data, $code = 200, $codeFailure = 400, int $options = 0)
     {
         return $this->json([
             'status' => $data->isOk() ? 1 : 0,
