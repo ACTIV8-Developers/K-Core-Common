@@ -222,6 +222,10 @@ trait ResourceCRUDTrait
                         $value = explode(',', $value);
                         $value = implode("','", $value);
                         $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
+                    } else if ($searchField === "StartDate") {
+                        $queryParam .= sprintf(" AND CAST(%s AS DATE) > CAST('%s' AS DATE) ", $searchField, $value);
+                    } else if ($searchField === "EndDate") {
+                        $queryParam .= sprintf(" AND CAST(%s AS DATE) < CAST('%s' AS DATE) ", $searchField, $value);
                     } else {
                         $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $value);
                     }
