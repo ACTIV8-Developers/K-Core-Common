@@ -34,6 +34,13 @@ class OutputResult
         ]);
     }
 
+    public static function successOrFailWithID(int $id): OutputResult
+    {
+        return new OutputResult(!!$id, !!$id ? 'OK' : 'OPERATION_FAILED', [
+            'id' => $id
+        ]);
+    }
+
     /**
      * @return int
      */
