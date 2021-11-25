@@ -343,16 +343,14 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
          * =============================================================================== */
         $queryParam = "1=1";
         foreach ($where as $k => $v) {
-            $queryParam .= sprintf(" AND %s.%s=%d", $model->getTableName(), $k, $v);
+            // TODO Clean param
+            $queryParam .= sprintf(" AND %s.%s=%s", $model->getTableName(), $k, is_string($v) ? "'$v'" : $v);
         }
 
         $sql = "SELECT " . $select . " FROM " . $model->getTableName() . " LEFT JOIN " . $joins . sprintf(" WHERE %s", $queryParam);
 
         $result = $this->db->select($sql);
 
-        $this->logger->debug("findBySQL", [
-            'sql' => $sql
-        ]);
         if (isset($result[0])) {
             $result = $result[0];
         } else {
