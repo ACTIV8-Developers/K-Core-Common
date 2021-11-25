@@ -213,7 +213,7 @@ trait ResourceCRUDTrait
          * =============================================================================== */
         if ($searchFields) {
             foreach ($searchFields as $key => $value) {
-                if ($value) {
+                if ($value && (isset($fields[$key]) || isset($additionalFields[$key]))) {
                     $searchField = sprintf("%s.%s", $tableName, $key);
                     if (!empty($additionalFields[$key])) {
                         $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap);
