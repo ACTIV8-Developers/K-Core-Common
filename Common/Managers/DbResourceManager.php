@@ -502,7 +502,7 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
                 if ($name === 'UpdatedByContactID') {
                     $value = $this->IAM->getContactID();
                 } else if ($name === 'CreateUpdateDate') {
-                    $value = "";
+                    $value = $this->currentDateTime();
                 } else if (
                     ($name === $model->getPrimaryKey())
                     || ($name === "Latitude")
