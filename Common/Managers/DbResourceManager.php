@@ -458,15 +458,13 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
 
     public function deleteWhere(BaseObject $model, string $key, string $value): int
     {
-        $sql = sprintf('DELETE FROM %s',
-            $model->getTableName()
+        $sql = sprintf('DELETE FROM %s WHERE %s=%s',
+            $model->getTableName(),
+            $key,
+            $value
         );
 
-        $where = [
-            $key => $value
-        ];
-
-        return $this->db->delete($sql, is_array($where) ? $where : []);
+        return $this->db->delete($sql, []);
     }
 
 
@@ -502,7 +500,7 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
                 if ($name === 'UpdatedByContactID') {
                     $value = $this->IAM->getContactID();
                 } else if ($name === 'CreateUpdateDate') {
-                    $value = "";
+                    $value = $this->currentDateTime();
                 } else if (
                     ($name === $model->getPrimaryKey())
                     || ($name === "Latitude")
