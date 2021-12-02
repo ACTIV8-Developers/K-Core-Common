@@ -347,7 +347,7 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
             $queryParam .= sprintf(" AND %s.%s=%s", $model->getTableName(), $k, is_string($v) ? "'$v'" : $v);
         }
 
-        $sql = "SELECT " . $select . " FROM " . $model->getTableName() . " LEFT JOIN " . $joins . sprintf(" WHERE %s", $queryParam);
+        $sql = "SELECT " . $select . " FROM " . $model->getTableName() . (empty($joins) ? '' : " LEFT JOIN " . $joins) . sprintf(" WHERE %s", $queryParam);
 
         $result = $this->db->select($sql);
 
