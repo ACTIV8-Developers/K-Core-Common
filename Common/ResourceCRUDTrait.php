@@ -329,6 +329,9 @@ trait ResourceCRUDTrait
 
         $parentResourceKey = $this->getParentResourceKey();
 
+        if (empty($id)) {
+            $id = $this->get($model->getPrimaryKey(), FILTER_SANITIZE_NUMBER_INT);
+        }
         $keys = $model->getTableKeys();
         unset($keys[$parentResourceKey]);
         unset($keys["CompanyID"]);
