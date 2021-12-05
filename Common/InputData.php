@@ -8,14 +8,17 @@ class InputData implements \ArrayAccess, \Countable
 
     public function __construct(array $data = [], array $template = [])
     {
-        $data = $this->cleanData($data, $template);
+        $data = $this->cleanData($data, $template, !empty($template));
 
         $this->data = $data;
     }
 
-    public function cleanData(array $data = [], $template = []): array
+    public function cleanData(array $data = [], $template = [], $excludeNonTemplate = false): array
     {
         foreach ($data as $key => $value) {
+            if ($excludeNonTemplate && !isset($template[$key])) {
+                continue;
+            }
             if (!is_array($value)) {
                 $data[$key] = $this->clean($value, $template[$key] ?? "");
             } else {

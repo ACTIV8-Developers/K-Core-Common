@@ -213,17 +213,44 @@ trait ResourceCRUDTrait
          * =============================================================================== */
         if ($searchFields) {
             foreach ($searchFields as $key => $value) {
-                if ($value && (isset($fields[$key]) || isset($additionalFields[$key]))) {
-                    $searchField = sprintf("%s.%s", $tableName, $key);
-                    if (!empty($additionalFields[$key])) {
-                        $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap);
-                    }
-                    if (str_contains($value, ',')) {
-                        $value = explode(',', $value);
-                        $value = implode("','", $value);
-                        $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
+                if ($value) {
+                    if (is_array($value)) {
+                        $key = $value[0];
+                        if (!empty($fields[$key])) {
+                            $searchField = sprintf("%s.%s", $tableName, $value[0]);
+                        } else if (!empty($additionalFields[$key])) {
+                            $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap);
+                        } else {
+                            throw new \Exception("UNSUPPORTED_COMPARE_FIELD");
+                        }
+
+                        switch ($value[1]) {
+                            case '<':
+                            case '>':
+                            case '<=':
+                            case '>=':
+                            case '=':
+                                if (strpos($fields[$key], 'datetime') !== false) {
+                                    $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST('%s' AS DATE))", $searchField, $value[1], $value[2]);
+                                } else {
+                                    $queryParam .= sprintf(" AND %s %s '%s' ", $searchField, $value[1], $value[2]);
+                                }
+                                break;
+                            default:
+                                throw new \Exception("UNSUPPORTED_COMPARE_OPERATION");
+                        }
                     } else {
-                        $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $value);
+                        $searchField = sprintf("%s.%s", $tableName, $key);
+                        if (!empty($additionalFields[$key])) {
+                            $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap);
+                        }
+                        if (str_contains($value, ',')) {
+                            $value = explode(',', $value);
+                            $value = implode("','", $value);
+                            $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
+                        } else {
+                            $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $value);
+                        }
                     }
                 }
             }
