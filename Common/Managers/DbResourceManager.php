@@ -140,22 +140,18 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         if (!empty($query)) {
             $searchableCol = $model->getSearchableColumns();
 
+            $queryParam .= (empty($queryParam)) ? " ( " : " AND ( ";
             if (isset($searchableCol[0])) {
-                $queryParam .= (empty($queryParam)) ? " ( " : " AND ( ";
-
                 foreach ($searchableCol as $value) {
-
                     $chunks = explode(' ', $query);
                     foreach ($chunks as $chunk) {
                         $queryParam .= sprintf("(%s.%s LIKE '%%%s%%') OR ", $tableName, $value, $chunk);
                     }
                     $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
                 }
-                $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " ) ";
             }
 
             if (!empty($keys)) {
-                $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
                 $i = 1;
                 foreach ($keys as $key) {
                     $joinModel = new $key();
@@ -169,10 +165,11 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
                             $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
                         }
                     }
-                    $i++;
+                    ++$i;
                 }
-                $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " ) ";
             }
+
+            $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " ) ";
         }
 
         /** Add WHERE part of the query from searchFields and where array
