@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\OAuth;
+namespace Common\Services\OAuth;
 
 use OAuth2\Storage\Pdo;
 
