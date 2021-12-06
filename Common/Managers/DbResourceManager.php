@@ -175,10 +175,16 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
             }
         }
 
+        /** Add WHERE part of the query from searchFields and where array
+         * =============================================================================== */
+        if (!empty($searchFields)) {
+            $where = array_merge($where, $searchFields);
+        }
+
         /** Add special fields to be a part of WHERE clause.
          * =============================================================================== */
-        if ($searchFields) {
-            foreach ($searchFields as $key => $value) {
+        if (!empty($where)) {
+            foreach ($where as $key => $value) {
                 if ($value) {
                     if (is_array($value)) {
                         $key = $value[0];
@@ -231,12 +237,6 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         /** Replace placeholders in the final WHERE string.
          * =============================================================================== */
         $queryParam = $this->fillPlaceholderTables($queryParam, $model, $keys, $tableAliasReplaceMap);
-
-        /** Add WHERE part of the query.
-         * =============================================================================== */
-        foreach ($where as $k => $v) {
-            $queryParam .= sprintf(" AND %s.%s=%d", $model->getTableName(), $k, $v);
-        }
 
         if (!empty($queryParam)) {
             $sql->where($queryParam);
