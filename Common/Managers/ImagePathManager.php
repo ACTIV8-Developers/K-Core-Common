@@ -3,7 +3,7 @@
 namespace Common\Managers;
 
 use App\Controllers\BaseController;
-use App\Controllers\Common\FunctionalTrait;
+use Common\FunctionalTrait;
 use Common\Managers\Interfaces\ImagePathManagerInterface;
 use Core\Container\Container;
 

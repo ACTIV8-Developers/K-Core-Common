@@ -2,14 +2,13 @@
 
 namespace Common\Managers;
 
-use App\Services\IAM\IAM;
-use App\Services\IAM\Interfaces\IAMInterface;
 use Common\Controllers\RootController;
 use Common\DAOTrait;
 use Common\Managers\Interfaces\ResourceManagerInterface;
 use Common\Models\BaseDAO;
 use Common\Models\BaseObject;
 use Common\ResourceCRUDTrait;
+use Common\Services\IAM\Interfaces\IAMInterface;
 use Core\Container\Container;
 use Core\Database\Interfaces\DatabaseInterface;
 
@@ -21,7 +20,7 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
     private IAMInterface $IAM;
     private DatabaseInterface $db;
 
-    public function __construct(DatabaseInterface $db, IAM $iam, Container $container)
+    public function __construct(DatabaseInterface $db, IAMInterface $iam, Container $container)
     {
         parent::__construct($container);
         $this->IAM = $iam;

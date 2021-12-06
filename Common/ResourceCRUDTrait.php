@@ -2,7 +2,6 @@
 
 namespace Common;
 
-use App\Controllers\Common\AbstractReports;
 use Common\Models\BaseObject;
 use Common\Models\BaseDAO;
 use Core\Http\Interfaces\ResponseInterface;
