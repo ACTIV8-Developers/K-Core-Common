@@ -411,7 +411,7 @@ trait ResourceCRUDTrait
             . (!empty($additionalFields) ? "," . implode(", ", str_replace("\n", "", $this->map($additionalFields, function ($val, $i, $k) {
                     return $k . "=" . $val;
                 }))) : "");
-$this->logger->info(1, ['trace' => $select]);
+
         $c = 1;
         foreach ($keys as $t => $tableOrder) {
             $m = new $tableOrder();
