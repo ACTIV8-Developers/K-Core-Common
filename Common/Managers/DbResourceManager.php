@@ -515,7 +515,7 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_NUMBER_INT);
                 } else if (strpos($type, 'decimal') === 0) {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                } else if (strpos($type, 'datetime') === 0) {
+                } else if (strpos($type, 'datetime') === 0 || strpos($type, 'date') === 0) {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_DATE);
                 } else {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
