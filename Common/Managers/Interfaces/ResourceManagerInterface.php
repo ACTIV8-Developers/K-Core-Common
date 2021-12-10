@@ -12,17 +12,38 @@ interface ResourceManagerInterface
      * @param BaseObject $model
      * @param array $input - query, sort, sortBy, offset, limit, archived (if applicable table has ArchivedDate field), searchFields
      * @param array $where - key/value conditions
-     * @return array
+     * @return array - array ['list' => [], 'count'=> 0]
      */
     public function readListBy(BaseObject $model, array $input, array $where): array;
 
+    // Deprecated
     public function readList(BaseObject $model, $where = null);
 
+    /**
+     * Returns single object with related/joined data according to passed $where parameters.
+     * Checks for CompanyID automatically if present in a model.
+     * @param BaseObject $model
+     * @param array $where
+     * @return mixed
+     */
+    public function findWhere(BaseObject $model, array $where);
+
+    /**
+     * Same as readWhere but with single custom param
+     * @param BaseObject $model
+     * @param string $key
+     * @param string $value
+     * @return mixed
+     */
     public function findBy(BaseObject $model, string $key, string $value);
 
+    /**
+     * Same as findWhere but with primary key param
+     * @param BaseObject $model
+     * @param int $id
+     * @return mixed
+     */
     public function findByID(BaseObject $model, int $id);
-
-    public function findWhere(BaseObject $model, array $where);
 
     /**
      * Creates object in the database based on the passed array values.
