@@ -119,9 +119,10 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
             ->join($joins);
         $sql->setContainer($this->container);
 
-        /** Add to WHERE clause for tables that are part of the multi tenant system (have CompanyID in a field list).
+        /** Add to WHERE clause for tables that are part of the multi tenant system (have CompanyID in a field list)
+         * and user is a part of the company.
          * =============================================================================== */
-        if (isset($fields["CompanyID"])) {
+        if (isset($fields["CompanyID"]) && !empty($this->IAM->getCompanyID())) {
             $queryParam = sprintf("%s.CompanyID=%d", $tableName, $this->IAM->getCompanyID());
         } else {
             $queryParam = "1=1";

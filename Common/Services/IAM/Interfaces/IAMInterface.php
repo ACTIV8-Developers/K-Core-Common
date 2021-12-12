@@ -7,4 +7,6 @@ interface IAMInterface
     public function getCompanyID(): ?int;
 
     public function getContactID(): ?int;
+
+    public function getContactEmail(): ?string;
 }

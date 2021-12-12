@@ -34,4 +34,13 @@ class IAM extends ContainerAware implements IAMInterface
         } catch (\Exception $e) {}
         return $value;
     }
+
+    public function getContactEmail(): ?string
+    {
+        $value = null;
+        try {
+            $value = $this->user['Contact']['Email'];
+        } catch (\Exception $e) {}
+        return $value;
+    }
 }

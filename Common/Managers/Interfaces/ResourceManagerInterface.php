@@ -8,7 +8,7 @@ interface ResourceManagerInterface
 {
     /**
      * Get list of objects with the related/joined data.
-     * Queries for CompanyID automatically if present in a model.
+     * Queries for CompanyID automatically if present in a model and logged in user have CompanyID set (based on IAMInterface)
      * @param BaseObject $model
      * @param array $input - query, sort, sortBy, offset, limit, archived (if applicable table has ArchivedDate field), searchFields
      * @param array $where - key/value conditions
