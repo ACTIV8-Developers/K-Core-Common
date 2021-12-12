@@ -365,15 +365,21 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
 
         $select = str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $select);
 
-        /** Add WHERE part of the query.
+        /** Add to WHERE clause for tables that are part of the multi tenant system (have CompanyID in a field list)
+         * and user is a part of the company.
          * =============================================================================== */
-        $queryParam = "1=1";
+        if (isset($fields["CompanyID"]) && !empty($this->IAM->getCompanyID())) {
+            $queryParam = sprintf("%s.CompanyID=%d", $tableName, $this->IAM->getCompanyID());
+        } else {
+            $queryParam = "1=1";
+        }
+
+        /** Add passed WHERE part of the query.
+         * =============================================================================== */
         foreach ($where as $k => $v) {
             // TODO Clean param
             $queryParam .= sprintf(" AND %s.%s=%s", $model->getTableName(), $k, is_string($v) ? "'$v'" : $v);
         }
-
-        // TODO Check for CompanyID
 
         $sql = "SELECT " . $select . " FROM " . $model->getTableName() . (empty($joins) ? '' : " LEFT JOIN " . $joins) . sprintf(" WHERE %s", $queryParam);
 

@@ -7,8 +7,9 @@ use Common\Models\BaseObject;
 interface ResourceManagerInterface
 {
     /**
-     * Get list of objects with the related/joined data.
+     * Get list of objects with the related/joined data (based on $keys and $meta fields in passed BaseObject)
      * Queries for CompanyID automatically if present in a model and logged in user have CompanyID set (based on IAMInterface)
+     * Queries for ArchivedDate being NULL if present in a model, if needed otherwise should be specified in a $inout parameter.
      * @param BaseObject $model
      * @param array $input - query, sort, sortBy, offset, limit, archived (if applicable table has ArchivedDate field), searchFields
      * @param array $where - key/value conditions
@@ -21,7 +22,7 @@ interface ResourceManagerInterface
 
     /**
      * Returns single object with related/joined data according to passed $where parameters.
-     * Checks for CompanyID automatically if present in a model.
+     * Queries for CompanyID automatically if present in a model and logged in user have CompanyID set (based on IAMInterface)
      * @param BaseObject $model
      * @param array $where
      * @return mixed
@@ -29,7 +30,7 @@ interface ResourceManagerInterface
     public function findWhere(BaseObject $model, array $where);
 
     /**
-     * Same as readWhere but with single custom param
+     * Same as findWhere but with single custom parameters.
      * @param BaseObject $model
      * @param string $key
      * @param string $value
@@ -38,7 +39,7 @@ interface ResourceManagerInterface
     public function findBy(BaseObject $model, string $key, string $value);
 
     /**
-     * Same as findWhere but with primary key param
+     * Same as findWhere but with primary key parameter only.
      * @param BaseObject $model
      * @param int $id
      * @return mixed
@@ -74,5 +75,13 @@ interface ResourceManagerInterface
      */
     public function updateFromData(BaseObject $model, int $id, array $data): int;
 
+    /**
+     * Deletes object(s) from the database based on the passed parameters.
+     * This performs hard delete.
+     * @param BaseObject $model
+     * @param string $key
+     * @param string $value
+     * @return int
+     */
     public function deleteWhere(BaseObject $model, string $key, string $value): int;
 }
