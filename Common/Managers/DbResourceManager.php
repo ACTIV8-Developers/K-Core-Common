@@ -11,6 +11,7 @@ use Common\ResourceCRUDTrait;
 use Common\Services\IAM\Interfaces\IAMInterface;
 use Core\Container\Container;
 use Core\Database\Interfaces\DatabaseInterface;
+use Exception;
 use Psr\Container\ContainerInterface;
 
 class DbResourceManager implements ResourceManagerInterface
@@ -194,7 +195,7 @@ class DbResourceManager implements ResourceManagerInterface
                         } else if (!empty($additionalFields[$key])) {
                             $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap);
                         } else {
-                            throw new \Exception("UNSUPPORTED_COMPARE_FIELD");
+                            throw new Exception("UNSUPPORTED_COMPARE_FIELD");
                         }
 
                         switch ($value[1]) {
@@ -210,7 +211,7 @@ class DbResourceManager implements ResourceManagerInterface
                                 }
                                 break;
                             default:
-                                throw new \Exception("UNSUPPORTED_COMPARE_OPERATION");
+                                throw new Exception("UNSUPPORTED_COMPARE_OPERATION");
                         }
                     } else {
                         $searchField = sprintf("%s.%s", $tableName, $key);
