@@ -15,18 +15,19 @@ class InputData implements \ArrayAccess, \Countable
 
     public function cleanData(array $data = [], $template = [], $excludeNonTemplate = false): array
     {
+        $result = [];
         foreach ($data as $key => $value) {
             if ($excludeNonTemplate && !isset($template[$key])) {
                 continue;
             }
             if (!is_array($value)) {
-                $data[$key] = $this->clean($value, $template[$key] ?? "");
+                $result[$key] = $this->clean($value, $template[$key] ?? "");
             } else {
-                $data[$key] = $this->cleanData($value, $template[$key] ?? []);
+                $result[$key] = $this->cleanData($value, $template[$key] ?? []);
             }
         }
 
-        return $data;
+        return $result;
     }
 
     public function toArray(): array
