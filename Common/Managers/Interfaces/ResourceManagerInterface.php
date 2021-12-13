@@ -15,10 +15,15 @@ interface ResourceManagerInterface
      * @param array $where - key/value conditions
      * @return array - array ['list' => [], 'count'=> 0]
      */
-    public function readListBy(BaseObject $model, array $input, array $where): array;
+    public function readListBy(BaseObject $model, array $input, array $where = []): array;
 
-    // Deprecated
-    public function readList(BaseObject $model, $where = null);
+    /**
+     * Same as readListBy but without $input parameter.
+     * @param BaseObject $model
+     * @param array $where
+     * @return array
+     */
+    public function readListWhere(BaseObject $model, array $where): array;
 
     /**
      * Returns single object with related/joined data according to passed $where parameters.
@@ -64,10 +69,17 @@ interface ResourceManagerInterface
      */
     public function createBulkFromData(BaseObject $model, array $data): int;
 
+
     /**
-     * Updates object in the database based on the passed primary key value.
+     * Updates object in the database based on the passed $where params
      * Only fields that are passed in the $data array will be updated.
      * System fields like UpdatedByContactID, CreateUpdateDate, and CompanyID will be auto populated.
+     * @return int (If updates i successful value greater than 0 is returned)
+     */
+    public function updateFromDataWhere(BaseObject $model, array $where, array $data): int;
+
+    /**
+    * Same as updateFromDataWhere but with primary key value
      * @param BaseObject $model
      * @param int $id
      * @param array $data
@@ -76,6 +88,8 @@ interface ResourceManagerInterface
     public function updateFromData(BaseObject $model, int $id, array $data): int;
 
     /**
+     * !! Deprecated will be replaced with deleteWhere(BaseObject $model, array $where)
+     *
      * Deletes object(s) from the database based on the passed parameters.
      * This performs hard delete.
      * @param BaseObject $model

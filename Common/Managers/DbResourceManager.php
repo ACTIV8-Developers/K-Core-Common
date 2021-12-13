@@ -11,23 +11,25 @@ use Common\ResourceCRUDTrait;
 use Common\Services\IAM\Interfaces\IAMInterface;
 use Core\Container\Container;
 use Core\Database\Interfaces\DatabaseInterface;
+use Psr\Container\ContainerInterface;
 
-class DbResourceManager extends RootController implements ResourceManagerInterface
+class DbResourceManager implements ResourceManagerInterface
 {
     use ResourceCRUDTrait;
     use DAOTrait;
 
     private IAMInterface $IAM;
     private DatabaseInterface $db;
+    private ContainerInterface $container;
 
     public function __construct(DatabaseInterface $db, IAMInterface $iam, Container $container)
     {
-        parent::__construct($container);
         $this->IAM = $iam;
         $this->db = $db;
+        $this->container = $container;
     }
 
-    public function readListBy(BaseObject $model, array $input, array $where): array
+    public function readListBy(BaseObject $model, array $input, array $where = []): array
     {
         /** Read user input from Request object.
          * =============================================================================== */
@@ -181,6 +183,7 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
 
         /** Add special fields to be a part of WHERE clause.
          * =============================================================================== */
+        // TODO Clean param and add advanced params (Make function to reuse with the rest)
         if (!empty($where)) {
             foreach ($where as $key => $value) {
                 if ($value) {
@@ -265,15 +268,12 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         ];
     }
 
-    // Deprecated will be removed
-    public function readList(BaseObject $model, $where = null)
+    /**
+     * @throws \Exception
+     */
+    public function readListWhere(BaseObject $model, array $where): array
     {
-        return $this->handleResourceRead(
-            $this->getDaoForObject(get_class($model)),
-            false,
-            null,
-            $where
-        );
+        return $this->readListBy($model, [], $where);
     }
 
     public function findBy(BaseObject $model, string $key, string $value)
@@ -377,7 +377,7 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         /** Add passed WHERE part of the query.
          * =============================================================================== */
         foreach ($where as $k => $v) {
-            // TODO Clean param
+            // TODO Clean param and add advanced params (Make function to reuse with the rest)
             $queryParam .= sprintf(" AND %s.%s=%s", $model->getTableName(), $k, is_string($v) ? "'$v'" : $v);
         }
 
@@ -463,7 +463,7 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         return $this->db->insert($sql, $insertData);
     }
 
-    public function updateFromData(BaseObject $model, int $id, array $data): int
+    public function updateFromDataWhere(BaseObject $model, array $where, array $data): int
     {
         $fields = $model->getTableFields();
 
@@ -484,10 +484,24 @@ class DbResourceManager extends RootController implements ResourceManagerInterfa
         }
         $values = rtrim($values, ',');
 
-        $sql = sprintf("UPDATE %s SET %s WHERE %s=%s",
-            $model->getTableName(), $values, $model->getPrimaryKey(), is_string($id) ? "'$id'" : $id);
+        $whereQuery = "";
+
+        foreach ($where as $k => $v) {
+            // TODO Clean param and add advanced params (Make function to reuse with the rest)
+            $whereQuery .= sprintf(" AND %s.%s=%s", $model->getTableName(), $k, is_string($v) ? "'$v'" : $v);
+        }
+
+        $sql = sprintf("UPDATE %s SET %s WHERE %s",
+            $model->getTableName(), $values, $whereQuery);
 
         return $this->db->update($sql, $data);
+    }
+
+    public function updateFromData(BaseObject $model, int $id, array $data): int
+    {
+        return $this->updateFromDataWhere($model, [
+            $model->getPrimaryKey() => $id
+        ], $data);
     }
 
     public function deleteWhere(BaseObject $model, string $key, string $value): int
