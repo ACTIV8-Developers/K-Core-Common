@@ -5,29 +5,47 @@ namespace Common;
 class InputData implements \ArrayAccess, \Countable
 {
     private array $data = [];
+    private array $template = [];
 
     public function __construct(array $data = [], array $template = [])
     {
-        $data = $this->cleanData($data, $template, !empty($template));
+        $data = $this->clean($data, $template, !empty($template));
 
         $this->data = $data;
+
+        $this->template = $template;
     }
 
-    public function cleanData(array $data = [], $template = [], $excludeNonTemplate = false): array
+    public function clean(array $data = [], $template = [], $excludeNonTemplate = false): array
     {
-        $result = [];
+        $cleanedData = [];
         foreach ($data as $key => $value) {
             if ($excludeNonTemplate && !isset($template[$key])) {
                 continue;
             }
             if (!is_array($value)) {
-                $result[$key] = $this->clean($value, $template[$key] ?? "");
+                $cleanedData[$key] = $this->cleanData($value, $template[$key] ?? "");
             } else {
-                $result[$key] = $this->cleanData($value, $template[$key] ?? []);
+                $cleanedData[$key] = $this->clean($value, $template[$key] ?? []);
             }
         }
 
-        return $result;
+        return $cleanedData;
+    }
+
+    public function validate(): bool
+    {
+        if (empty($this->template)) {
+            return true;
+        }
+
+        foreach ($this->template as $k => $v) {
+            if (!isset($this->data[$k]) && (strpos($v, "NULL") === false)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function toArray(): array
@@ -131,7 +149,7 @@ class InputData implements \ArrayAccess, \Countable
         return ($d && $d->format($format) === $value) ? $value : null;
     }
 
-    protected function clean($value, $type)
+    protected function cleanData($value, $type)
     {
         if ($value !== 0 && !$value && !$type) {
             return null;
