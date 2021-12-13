@@ -488,7 +488,7 @@ class DbResourceManager implements ResourceManagerInterface
 
         foreach ($where as $k => $v) {
             // TODO Clean param and add advanced params (Make function to reuse with the rest)
-            $whereQuery .= sprintf(" AND %s.%s=%s", $model->getTableName(), $k, is_string($v) ? "'$v'" : $v);
+            $whereQuery .= (empty($whereQuery) ? '' : " AND ") . sprintf(" %s.%s=%s", $model->getTableName(), $k, is_string($v) ? "'$v'" : $v);
         }
 
         $sql = sprintf("UPDATE %s SET %s WHERE %s",
