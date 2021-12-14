@@ -187,8 +187,8 @@ class DbResourceManager implements ResourceManagerInterface
         // TODO Clean param and add advanced params (Make function to reuse with the rest)
         if (!empty($where)) {
             foreach ($where as $key => $value) {
-                if ($value) {
-                    if (is_array($value) && !empty($value)) {
+                if (!empty($value)) {
+                    if (is_array($value)) {
                         $key = $value[0];
                         if (!empty($fields[$key])) {
                             $searchField = sprintf("%s.%s", $tableName, $value[0]);
