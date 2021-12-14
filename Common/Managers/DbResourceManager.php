@@ -516,6 +516,11 @@ class DbResourceManager implements ResourceManagerInterface
         return $this->db->delete($sql, []);
     }
 
+    public function deleteByID(BaseObject $model, int $id): int
+    {
+        return $this->deleteWhere($model, $model->getPrimaryKey(), $id);
+    }
+
     /**
      * This function will fill, and return, an array with values required to create/update given table model based on the passed array data.
      * Function will iterate through all fields from the given model, and will try to fill data unless it is

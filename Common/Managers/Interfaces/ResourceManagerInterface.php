@@ -95,7 +95,15 @@ interface ResourceManagerInterface
      * @param BaseObject $model
      * @param string $key
      * @param string $value
-     * @return int
+     * @return int (If delete i successful value greater than 0 is returned)
      */
     public function deleteWhere(BaseObject $model, string $key, string $value): int;
+
+    /**
+     * Same as deleteWhere but with primary key parameter only.
+     * @param BaseObject $model
+     * @param int $id
+     * @return int
+     */
+    public function deleteByID(BaseObject $model, int $id): int;
 }
