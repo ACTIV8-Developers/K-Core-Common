@@ -188,7 +188,7 @@ class DbResourceManager implements ResourceManagerInterface
         if (!empty($where)) {
             foreach ($where as $key => $value) {
                 if ($value) {
-                    if (is_array($value)) {
+                    if (is_array($value) && !empty($value[2])) {
                         $key = $value[0];
                         if (!empty($fields[$key])) {
                             $searchField = sprintf("%s.%s", $tableName, $value[0]);
