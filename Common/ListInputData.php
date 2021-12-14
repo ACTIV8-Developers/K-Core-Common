@@ -13,10 +13,19 @@ class ListInputData extends InputData
             'limit' => 'int',
             'offset' => 'int',
             'archived' => 'int',
-            'searchFields' => 'varchar',
+            'searchFields' => 'json',
             'ExcludeIDs' => 'varchar'
         ];
 
         parent::__construct($data, $template);
+    }
+
+    protected function cleanData($value, $type)
+    {
+        if ($type === 'json') {
+            return json_decode($value, 1) ? $value : "{}";
+        }
+
+        return parent::cleanData($value, $type);
     }
 }
