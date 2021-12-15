@@ -11,6 +11,8 @@ const WHERE = 4;
 const VALIDATE = 5;
 const TABLES = 6;
 const ADDITIONAL_FIELDS = 7;
+
+// Deprecated
 const DEFAULT_READ = 8;
 const GLOBAL_FIELDS = 9;
 

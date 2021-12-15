@@ -4,9 +4,9 @@ namespace Common;
 
 class ListInputData extends InputData
 {
-    public function __construct(array $data = [])
+    public function __construct(array $data = [], array $template = [])
     {
-        $template = [
+        parent::__construct($data, array_merge($template, [
             'query' => 'varchar',
             'sort' => 'varchar',
             'sortBy' => 'varchar',
@@ -15,8 +15,6 @@ class ListInputData extends InputData
             'archived' => 'int',
             'searchFields' => 'varchar',
             'ExcludeIDs' => 'varchar'
-        ];
-
-        parent::__construct($data, $template);
+        ]));
     }
 }
