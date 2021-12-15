@@ -197,7 +197,7 @@ class DbResourceManager implements ResourceManagerInterface
         // TODO Clean param and add advanced params (Make function to reuse with the rest)
         if (!empty($where)) {
             foreach ($where as $key => $value) {
-                if ($value) {
+                if (!empty($value)) {
                     if (is_array($value)) {
                         $key = $value[0];
                         if (!empty($fields[$key])) {
@@ -524,6 +524,11 @@ class DbResourceManager implements ResourceManagerInterface
         );
 
         return $this->db->delete($sql, []);
+    }
+
+    public function deleteByID(BaseObject $model, int $id): int
+    {
+        return $this->deleteWhere($model, $model->getPrimaryKey(), $id);
     }
 
     /**
