@@ -155,16 +155,6 @@ class DbResourceManager implements ResourceManagerInterface
                 }
             }
 
-            if (!empty($additionalFields)) {
-                foreach ($additionalFields as $v) {
-                    $chunks = explode(' ', $query);
-                    foreach ($chunks as $chunk) {
-                        $queryParam .= sprintf("(%s LIKE '%%%s%%') OR ", $v, $chunk);
-                    }
-                    $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
-                }
-            }
-
             if (!empty($keys)) {
                 $i = 1;
                 foreach ($keys as $key) {
