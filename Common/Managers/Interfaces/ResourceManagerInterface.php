@@ -69,7 +69,6 @@ interface ResourceManagerInterface
      */
     public function createBulkFromData(BaseObject $model, array $data): int;
 
-
     /**
      * Updates object in the database based on the passed $where params
      * Only fields that are passed in the $data array will be updated.
