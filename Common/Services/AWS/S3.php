@@ -10,10 +10,7 @@ use Core\Http\Response;
 
 class S3
 {
-    /**
-     * @var S3Client
-     */
-    private $client = null;
+    private ?S3Client $client = null;
 
     public function __construct($config)
     {
@@ -27,26 +24,19 @@ class S3
         ]);
     }
 
-    public function getClient()
-    {
-        return $this->client;
-    }
-
     /**
      * @param string $key
      * @param string $filepath
      * @param string $bucket
      * @return Result
      */
-    public function put($key, $filepath, $bucket = "default_bucket")
+    public function put(string $key, string $filepath, $bucket = "default_bucket")
     {
-        $result = $this->client->putObject([
+        return $this->client->putObject([
             'Bucket' => $bucket,
             'Key' => $key,
             'SourceFile' => $filepath
         ]);
-
-        return $result;
     }
 
     /**
@@ -111,6 +101,7 @@ class S3
         $response->setHeader('Expires', '0');
         $response->setHeader('Cache-Control', 'must-revalidate');
         $response->setHeader('Pragma', 'public');
+        $response->setHeader("Content-Transfer-Encoding", "binary");
         $response->setHeader('Content-Length', filesize($path));
         $response->setBody(file_get_contents($path));
 
@@ -143,6 +134,9 @@ class S3
         return [$path, $name];
     }
 
+    /**
+     * @throws \Exception
+     */
     private function videoStream($filename)
     {
         $stream = new VideoStream($filename);
@@ -150,7 +144,7 @@ class S3
         die;
     }
 
-    private function fileStream($filename, $key)
+    private function fileStream($filename, $key): void
     {
         set_time_limit(300);
         $size = intval(sprintf("%u", filesize($filename)));
@@ -166,7 +160,7 @@ class S3
         header('Access-Control-Allow-Credentials: true');
         $handle = fopen($filename, 'rb');
         if ($handle === false) {
-            return false;
+            return;
         }
         $chunksize = 3 * (1024 * 1024);
         ob_clean();
@@ -190,5 +184,11 @@ class S3
     private function fixKeyBucket($key, $bucket): array
     {
         return [$key, $bucket];
+    }
+
+    public function getPath(string $key, string $bucket = 'default_bucket'): string
+    {
+        $this->client->registerStreamWrapper();
+        return 's3://' . $bucket . '/' . $key;
     }
 }

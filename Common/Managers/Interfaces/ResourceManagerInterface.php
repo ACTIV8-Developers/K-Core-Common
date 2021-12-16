@@ -100,6 +100,15 @@ interface ResourceManagerInterface
     public function deleteWhere(BaseObject $model, string $key, string $value): int;
 
     /**
+     * Same as deleteWhere but with single custom parameters.
+     * @param BaseObject $model
+     * @param string $key
+     * @param string $value
+     * @return int
+     */
+    public function deleteBy(BaseObject $model, string $key, string $value): int;
+
+    /**
      * Same as deleteWhere but with primary key parameter only.
      * @param BaseObject $model
      * @param int $id
