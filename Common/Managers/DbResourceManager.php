@@ -516,6 +516,11 @@ class DbResourceManager implements ResourceManagerInterface
         return $this->db->delete($sql, []);
     }
 
+    public function deleteBy(BaseObject $model, string $key, string $value): int
+    {
+        return $this->deleteWhere($model, $key, $value);
+    }
+
     public function deleteByID(BaseObject $model, int $id): int
     {
         return $this->deleteWhere($model, $model->getPrimaryKey(), $id);

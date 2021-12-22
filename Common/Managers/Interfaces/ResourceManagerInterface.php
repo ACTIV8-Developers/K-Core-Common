@@ -69,7 +69,6 @@ interface ResourceManagerInterface
      */
     public function createBulkFromData(BaseObject $model, array $data): int;
 
-
     /**
      * Updates object in the database based on the passed $where params
      * Only fields that are passed in the $data array will be updated.
@@ -98,6 +97,15 @@ interface ResourceManagerInterface
      * @return int (If delete i successful value greater than 0 is returned)
      */
     public function deleteWhere(BaseObject $model, string $key, string $value): int;
+
+    /**
+     * Same as deleteWhere but with single custom parameters.
+     * @param BaseObject $model
+     * @param string $key
+     * @param string $value
+     * @return int
+     */
+    public function deleteBy(BaseObject $model, string $key, string $value): int;
 
     /**
      * Same as deleteWhere but with primary key parameter only.
