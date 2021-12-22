@@ -7,14 +7,11 @@ use Common\FunctionalTrait;
 const SEARCHABLE_COLUMNS = 1;
 const DESC_COLUMN = 2;
 const EXCEL_COLUMN = 3;
-const WHERE = 4;
-const VALIDATE = 5;
 const TABLES = 6;
 const ADDITIONAL_FIELDS = 7;
 
 // Deprecated
 const DEFAULT_READ = 8;
-const GLOBAL_FIELDS = 9;
 
 /**
  * Class BaseObject
@@ -122,14 +119,6 @@ abstract class BaseObject
     }
 
     /**
-     * @return string
-     */
-    public function getGlobalFields()
-    {
-        return $this->getMetaByKey(GLOBAL_FIELDS);
-    }
-
-    /**
      * @return array
      */
     public function getTables(): ?array
@@ -137,19 +126,9 @@ abstract class BaseObject
         return $this->getMetaByKey(TABLES);
     }
 
-    public function getWhere()
-    {
-        return $this->getMetaByKey(WHERE);
-    }
-
     public function getAdditionalFields()
     {
         return $this->getMetaByKey(ADDITIONAL_FIELDS);
-    }
-
-    public function getValidate()
-    {
-        return $this->getMetaByKey(VALIDATE);
     }
 
     public function getMetaByKey($key)

@@ -132,12 +132,6 @@ trait ResourceCRUDTrait
             ->select($select)
             ->join($joins);
 
-        $global = "";
-        if ($model->getGlobalFields() && !empty($model->getGlobalFields())) {
-            $global = implode(",", $model->getGlobalFields());
-        }
-        $global = str_replace("[[key]]", $id, $global);
-
         /** Add to WHERE clause for tables that are part of the multi tenant system (have CompanyID in a field list).
          * =============================================================================== */
         if (isset($fields["CompanyID"])) {
@@ -239,7 +233,7 @@ trait ResourceCRUDTrait
                     } else {
                         $searchField = sprintf("%s.%s", $tableName, $key);
                         if (!empty($additionalFields[$key])) {
-                            $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap);
+                            $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap, true);
                         }
                         if (str_contains($value, ',')) {
                             $value = explode(',', $value);
@@ -495,10 +489,6 @@ trait ResourceCRUDTrait
         $data = $this->getRequestFieldsFromModel($model, false, $defaults);
 
         if (empty($data)) {
-            return false;
-        }
-
-        if (!empty($model->getValidate()) && !$this->validate($model->getValidate(), $data, $resourceDao)) {
             return false;
         }
 
@@ -1024,10 +1014,13 @@ trait ResourceCRUDTrait
         return $data;
     }
 
-    private function fillPlaceholderTables(string $queryParam, BaseObject $model, array $keys, array $tableAliasReplaceMap): string
+    private function fillPlaceholderTables(string $queryParam, BaseObject $model, array $keys, array $tableAliasReplaceMap, $skipSelfJoin = false): string
     {
         foreach ($keys as $tableOrder) {
             $m = new $tableOrder();
+            if ($skipSelfJoin && ($m->getTableName() === $model->getTableName())) {
+                continue;
+            }
             $queryParam = str_replace("{{" . $m->getTableName() . "}}", !empty($tableAliasReplaceMap) ? $tableAliasReplaceMap[$m->getTableName()] : $m->getTableName(), $queryParam);
         }
         return str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $queryParam);

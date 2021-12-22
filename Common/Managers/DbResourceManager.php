@@ -270,7 +270,10 @@ class DbResourceManager implements ResourceManagerInterface
     }
 
     /**
-     * @throws \Exception
+     * @param BaseObject $model
+     * @param array $where
+     * @return array
+     * @throws Exception
      */
     public function readListWhere(BaseObject $model, array $where): array
     {
@@ -390,27 +393,6 @@ class DbResourceManager implements ResourceManagerInterface
             $result = $result[0];
         } else {
             return null;
-        }
-
-        /** Add NESTED data. (TABLES key in meta data)
-         * =============================================================================== */
-        foreach ($model->getTables() ?? [] as $table => $primary) {
-            $m = new $table();
-            $result[str_replace("tbl_", "", $m->getTableName())] =
-                $this->db->query("SELECT * FROM " . $m->getTableName() . " WHERE " . $primary . "=" . $result[$primary])->fetchAll();
-        }
-
-        foreach ($keys as $key => $value) {
-            $model = new $value();
-            if (!empty($model->getTables())) {
-                foreach ($model->getTables() as $table => $primary) {
-                    $model = new $table();
-                    if ($result[$key])
-                        if (empty($result[str_replace("tbl_", "", $model->getTableName())]))
-                            $result[str_replace("tbl_", "", $model->getTableName())] =
-                                $this->db->query("SELECT * FROM " . $model->getTableName() . " WHERE " . $model->getTableName() . "." . $model->getPrimaryKey() . "=" . $result[$key])->fetchAll();
-                }
-            }
         }
 
         return $result;
