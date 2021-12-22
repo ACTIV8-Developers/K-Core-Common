@@ -33,8 +33,6 @@ trait ResourceCRUDTrait
     {
         /** Read user input from Request object.
          * =============================================================================== */
-        $user = $this->user;
-
         $CompanyID = $this->IAM->getCompanyID();
 
         $id = $this->get('id', FILTER_SANITIZE_NUMBER_INT);
@@ -81,9 +79,10 @@ trait ResourceCRUDTrait
 
         $tableAliasReplaceMap = [];
         $allAdditionalFieldsMap = array_merge($primaryFields, $additionalFields ?? []);
+        $allAdditionalFields = $additionalFields;
         $keysCopy = $keys;
 
-        $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap, &$keysCopy) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
+        $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap, &$allAdditionalFields, &$keysCopy) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
             /** @var BaseObject $model */
             $joinModel = new $key();
 
@@ -99,6 +98,7 @@ trait ResourceCRUDTrait
                 $select .= "," . $this->fillAdditionalFieldsSelect($joinAdditionalFields, $joinModel, $keys, $tableAliasReplaceMap);
             }
             $allAdditionalFieldsMap = array_merge($allAdditionalFieldsMap ?? [], $joinAdditionalFields ?? []);
+            $allAdditionalFields = array_merge($allAdditionalFields ?? [], $joinAdditionalFields ?? []);
 
             $alias = array_search($key, $keysCopy);
             unset($keysCopy[$alias]);
@@ -278,9 +278,9 @@ trait ResourceCRUDTrait
         /** Add SORT part of the query.
          * =============================================================================== */
         if (!empty($sortBy) && $sort) {
-            if (!empty($additionalFields[$sortBy])) {
-                $additionalFields[$sortBy] = str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $additionalFields[$sortBy]);
-                $sortBy = $this->fillPlaceholderTables($additionalFields[$sortBy], $model, $keys, $tableAliasReplaceMap);
+            if (!empty($allAdditionalFields[$sortBy])) {
+                $allAdditionalFields[$sortBy] = str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $allAdditionalFields[$sortBy]);
+                $sortBy = $this->fillPlaceholderTables($allAdditionalFields[$sortBy], $model, $keys, $tableAliasReplaceMap);
             }
             $sql->orderBy($sortBy);
             $sql->order($sort);
