@@ -308,12 +308,6 @@ trait ResourceCRUDTrait
         /** Output as JSON response
          * =============================================================================== */
         if ($output) {
-            if ($global != "") {
-                $gl = $this->db->select("SELECT TOP 1 " . $global . " FROM " . $resourceDao->getModel()->getTableName(), []);
-                foreach ($gl[0] ?? [] as $k => $v) {
-                    $rt[$k] = $v;
-                }
-            }
             return $this->json([
                 'status' => 0,
                 'message' => 'OK',
@@ -323,12 +317,6 @@ trait ResourceCRUDTrait
 
         /** Output as PHP array
          * =============================================================================== */
-        if ($global != "") {
-            $gl = $this->db->query("SELECT TOP 1 " . $global . " FROM " . $resourceDao->getModel()->getTableName());
-            foreach ($gl->fetchAll()[0] ?? [] as $k => $v) {
-                $rt[$k] = $v;
-            }
-        }
         return $rt;
     }
 
