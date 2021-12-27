@@ -64,9 +64,9 @@ class DbResourceManager implements ResourceManagerInterface
         /** Gather information about model.
          * =============================================================================== */
         $joins = $this->map($keys, function ($key, $i, $k) use ($tableName) {
-            $model = new $key();
-            $joinTableName = $model->getTableName();
-            $joinTablePK = $model->getPrimaryKey();
+            $joinModel = new $key();
+            $joinTableName = $joinModel->getTableName();
+            $joinTablePK = $joinModel->getPrimaryKey();
 
             return sprintf("LEFT JOIN %s as t%d ON t%d.%s=%s.%s", $joinTableName, $i + 1, $i + 1, $joinTablePK, $tableName, $k);
         });
@@ -76,7 +76,7 @@ class DbResourceManager implements ResourceManagerInterface
         $keysCopy = $keys;
 
         $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap, &$keysCopy) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
-            /** @var BaseObject $model */
+            /** @var BaseObject $joinModel */
             $joinModel = new $key();
 
             $joinDescColumn = $joinModel->getDescColumn("t" . ($i + 1));
@@ -184,51 +184,7 @@ class DbResourceManager implements ResourceManagerInterface
 
         /** Add special fields to be a part of WHERE clause.
          * =============================================================================== */
-        // TODO Clean param and add advanced params (Make function to reuse with the rest)
-        if (!empty($where)) {
-            foreach ($where as $key => $value) {
-                if (!empty($value)) {
-                    if (is_array($value)) {
-                        $key = $value[0];
-                        if (!empty($fields[$key])) {
-                            $searchField = sprintf("%s.%s", $tableName, $value[0]);
-                        } else if (!empty($additionalFields[$key])) {
-                            $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap);
-                        } else {
-                            throw new Exception("UNSUPPORTED_COMPARE_FIELD");
-                        }
-
-                        switch ($value[1]) {
-                            case '<':
-                            case '>':
-                            case '<=':
-                            case '>=':
-                            case '=':
-                                if (strpos($fields[$key], 'datetime') !== false) {
-                                    $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST('%s' AS DATE))", $searchField, $value[1], $value[2]);
-                                } else {
-                                    $queryParam .= sprintf(" AND %s %s '%s' ", $searchField, $value[1], $value[2]);
-                                }
-                                break;
-                            default:
-                                throw new Exception("UNSUPPORTED_COMPARE_OPERATION");
-                        }
-                    } else {
-                        $searchField = sprintf("%s.%s", $tableName, $key);
-                        if (!empty($additionalFields[$key])) {
-                            $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap);
-                        }
-                        if (str_contains($value, ',')) {
-                            $value = explode(',', $value);
-                            $value = implode("','", $value);
-                            $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
-                        } else {
-                            $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $value);
-                        }
-                    }
-                }
-            }
-        }
+        $queryParam .= $this->appendWhereQuery($model, $where, $additionalFields ?? [], $tableAliasReplaceMap);
 
         /** Add exclude part of the WHERE clause.
          * =============================================================================== */
@@ -239,6 +195,7 @@ class DbResourceManager implements ResourceManagerInterface
         /** Replace placeholders in the final WHERE string.
          * =============================================================================== */
         $queryParam = $this->fillPlaceholderTables($queryParam, $model, $keys, $tableAliasReplaceMap);
+
 
         if (!empty($queryParam)) {
             $sql->where($queryParam);
@@ -380,10 +337,7 @@ class DbResourceManager implements ResourceManagerInterface
 
         /** Add passed WHERE part of the query.
          * =============================================================================== */
-        foreach ($where as $k => $v) {
-            // TODO Clean param and add advanced params (Make function to reuse with the rest)
-            $queryParam .= sprintf(" AND %s.%s=%s", $model->getTableName(), $k, is_string($v) ? "'$v'" : $v);
-        }
+        $queryParam .= $this->appendWhereQuery($model, $where, $additionalFields, $tableAliasReplaceMap);
 
         $sql = "SELECT " . $select . " FROM " . $model->getTableName() . (empty($joins) ? '' : " LEFT JOIN " . $joins) . sprintf(" WHERE %s", $queryParam);
 
@@ -615,5 +569,60 @@ class DbResourceManager implements ResourceManagerInterface
     protected function createRandomHash($value)
     {
         return substr(hash('sha512', $value . rand(1, 100)), 0, 24);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function appendWhereQuery(BaseObject $model, array $where, array $additionalFields, array $tableAliasReplaceMap): string
+    {
+        $queryParam = "";
+        $fields = $model->getTableFields();
+        if (!empty($where)) {
+            foreach ($where as $key => $value) {
+                if (!empty($value)) {
+                    if (is_array($value)) {
+                        $key = $value[0];
+                        if (!empty($fields[$key])) {
+                            $searchField = sprintf("%s.%s", $model->getTableName(), $value[0]);
+                        } else if (!empty($additionalFields[$key])) {
+                            $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $model->getTableKeys(), $tableAliasReplaceMap);
+                        } else {
+                            throw new Exception("UNSUPPORTED_COMPARE_FIELD");
+                        }
+
+                        switch ($value[1]) {
+                            case '<':
+                            case '>':
+                            case '<=':
+                            case '>=':
+                            case '=':
+                                if (strpos($fields[$key], 'datetime') !== false) {
+                                    $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST('%s' AS DATE))", $searchField, $value[1], $value[2]);
+                                } else {
+                                    $queryParam .= sprintf(" AND %s %s '%s' ", $searchField, $value[1], $value[2]);
+                                }
+                                break;
+                            default:
+                                throw new Exception("UNSUPPORTED_COMPARE_OPERATION");
+                        }
+                    } else {
+                        $searchField = sprintf("%s.%s", $model->getTableName(), $key);
+                        if (!empty($additionalFields[$key])) {
+                            $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $model->getTableKeys(), $tableAliasReplaceMap);
+                        }
+                        if (str_contains($value, ',')) {
+                            $value = explode(',', $value);
+                            $value = implode("','", $value);
+                            $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
+                        } else {
+                            $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $value);
+                        }
+                    }
+                }
+            }
+        }
+
+        return $queryParam;
     }
 }
