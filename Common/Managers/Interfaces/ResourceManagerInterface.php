@@ -73,6 +73,9 @@ interface ResourceManagerInterface
      * Updates object in the database based on the passed $where params
      * Only fields that are passed in the $data array will be updated.
      * System fields like UpdatedByContactID, CreateUpdateDate, and CompanyID will be auto populated.
+     * @param BaseObject $model
+     * @param array $where
+     * @param array $data
      * @return int (If updates i successful value greater than 0 is returned)
      */
     public function updateFromDataWhere(BaseObject $model, array $where, array $data): int;
