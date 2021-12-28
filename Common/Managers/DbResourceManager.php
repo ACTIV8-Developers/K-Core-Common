@@ -337,7 +337,7 @@ class DbResourceManager implements ResourceManagerInterface
 
         /** Add passed WHERE part of the query.
          * =============================================================================== */
-        $queryParam .= $this->appendWhereQuery($model, $where, $additionalFields, $tableAliasReplaceMap);
+        $queryParam .= $this->appendWhereQuery($model, $where, $additionalFields ?? [], $tableAliasReplaceMap);
 
         $sql = "SELECT " . $select . " FROM " . $model->getTableName() . (empty($joins) ? '' : " LEFT JOIN " . $joins) . sprintf(" WHERE %s", $queryParam);
 
