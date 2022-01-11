@@ -598,7 +598,7 @@ class DbResourceManager implements ResourceManagerInterface
                             case '>=':
                             case '=':
                                 if (strpos($fields[$key], 'datetime') !== false) {
-                                    $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST('%s' AS DATE))", $searchField, $value[1], $value[2]);
+                                    $queryParam .= sprintf(" AND (CAST(%s AS DATETIME) %s CAST('%s' AS DATETIME))", $searchField, $value[1], $value[2]);
                                 } else {
                                     $queryParam .= sprintf(" AND %s %s '%s' ", $searchField, $value[1], $value[2]);
                                 }
