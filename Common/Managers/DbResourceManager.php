@@ -528,7 +528,7 @@ class DbResourceManager implements ResourceManagerInterface
     {
         foreach ($keys as $tableOrder) {
             $m = new $tableOrder();
-            $queryParam = str_replace("{{" . $m->getTableName() . "}}", !empty($tableAliasReplaceMap) ? $tableAliasReplaceMap[$m->getTableName()] : $m->getTableName(), $queryParam);
+            $queryParam = str_replace("{{" . $m->getTableName() . "}}", !empty($tableAliasReplaceMap) && isset($tableAliasReplaceMap[$m->getTableName()]) ? $tableAliasReplaceMap[$m->getTableName()] : $m->getTableName(), $queryParam);
         }
         return str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $queryParam);
     }
