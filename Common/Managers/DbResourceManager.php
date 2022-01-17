@@ -608,7 +608,7 @@ class DbResourceManager implements ResourceManagerInterface
                         }
                     } else {
                         $searchField = sprintf("%s.%s", $model->getTableName(), $key);
-                        if (!empty($additionalFields[$key])) {
+                        if (!$fields[$key] && !empty($additionalFields[$key])) {
                             $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $model->getTableKeys(), $tableAliasReplaceMap);
                         }
                         if (str_contains($value, ',')) {
