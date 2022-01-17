@@ -528,7 +528,7 @@ class DbResourceManager implements ResourceManagerInterface
     {
         foreach ($keys as $tableOrder) {
             $m = new $tableOrder();
-            $queryParam = str_replace("{{" . $m->getTableName() . "}}", !empty($tableAliasReplaceMap) ? $tableAliasReplaceMap[$m->getTableName()] : $m->getTableName(), $queryParam);
+            $queryParam = str_replace("{{" . $m->getTableName() . "}}", !empty($tableAliasReplaceMap) && isset($tableAliasReplaceMap[$m->getTableName()]) ? $tableAliasReplaceMap[$m->getTableName()] : $m->getTableName(), $queryParam);
         }
         return str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $queryParam);
     }
@@ -598,7 +598,7 @@ class DbResourceManager implements ResourceManagerInterface
                             case '>=':
                             case '=':
                                 if (strpos($fields[$key], 'datetime') !== false) {
-                                    $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST('%s' AS DATE))", $searchField, $value[1], $value[2]);
+                                    $queryParam .= sprintf(" AND (CAST(%s AS DATETIME) %s CAST('%s' AS DATETIME))", $searchField, $value[1], $value[2]);
                                 } else {
                                     $queryParam .= sprintf(" AND %s %s '%s' ", $searchField, $value[1], $value[2]);
                                 }
