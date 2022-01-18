@@ -718,7 +718,7 @@ trait ResourceCRUDTrait
                 $value = $this->createRandomHash(date(DEFAULT_SQL_FORMAT));
             } else if ($name === 'CompanyID') {
                 $value = $this->IAM->getCompanyID();
-            } else if (!array_key_exists($name, $this->container['data'])) {
+            } else if (isset($this->container['data']) && !array_key_exists($name, $this->container['data'])) {
                 continue;
             } else {
                 // Fill from HTTP request data
@@ -849,7 +849,7 @@ trait ResourceCRUDTrait
 
         $currentDateTime = $this->currentDateTime();
 
-        return $this->map($data, function ($it) use ($defaults, $isUpdate, $parentResourceKey, $currentDateTime, $user, $model) {
+        return $this->map($data, function ($it) use ($defaults, $isUpdate, $parentResourceKey, $currentDateTime, $model) {
             $data = [];
             foreach ($model->getTableFields() as $name => $type) {
                 // Take defaults firsts
