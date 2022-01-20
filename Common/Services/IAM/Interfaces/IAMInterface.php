@@ -38,6 +38,13 @@ interface IAMInterface
     public function getContactEmail(): ?string;
 
     /**
+     * Will return key from field Attributes
+     * @param string $key
+     * @return mixed
+     */
+    public function getAttribute(string $key);
+
+    /**
      * Checks if user have permission to execute passed action.
      * PERMISSION_DENIED 0
      * PERMISSION_CREATE 2
