@@ -59,15 +59,6 @@ class IAM extends ContainerAware implements IAMInterface
         return $value;
     }
 
-    public function getAttribute(string $key)
-    {
-        $value = null;
-        try {
-            $value = $this->user['Attributes'][$key] ?? null;
-        } catch (\Exception $e) {}
-        return $value;
-    }
-
     /**
      * Checks if user have permission to execute passed action.
      * PERMISSION_DENIED 0
