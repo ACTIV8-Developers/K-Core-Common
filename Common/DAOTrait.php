@@ -2,6 +2,7 @@
 
 namespace Common;
 
+use Carbon\Carbon;
 use Common\Models\BaseDAO;
 
 trait DAOTrait
@@ -34,5 +35,14 @@ trait DAOTrait
             return substr($queryParam, 0, strlen($queryParam) - 4) . ")";
         }
         return $queryParam;
+    }
+
+    public function toFrontDateTime($date, $format = "m/d/Y H:i"): ?string
+    {
+        if ($date) {
+            $dt = Carbon::parse($date);
+            return $dt->format($format);
+        }
+        return null;
     }
 }
