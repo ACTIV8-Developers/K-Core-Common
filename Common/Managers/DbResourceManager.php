@@ -258,6 +258,7 @@ class DbResourceManager implements ResourceManagerInterface
         $additionalFields = $model->getAdditionalFields();
         $tableName = $model->getTableName();
 
+        $primaryFields = $model->getTableFields();
         $keys = $model->getTableKeys();
         unset($keys["CompanyID"]);
 
@@ -272,13 +273,14 @@ class DbResourceManager implements ResourceManagerInterface
         });
 
         $tableAliasReplaceMap = [];
-        $allAdditionalFieldsMap = $additionalFields;
+        $allAdditionalFieldsMap = array_merge($primaryFields, $additionalFields ?? []);
+        $allAdditionalFields = $additionalFields;
+        $keysCopy = $keys;
 
-        $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap, $model) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
+        $joinsSelects = implode(", ", $this->map($keys, function ($key, $i) use ($keys, &$tableAliasReplaceMap, &$allAdditionalFieldsMap, $model, &$keysCopy, &$allAdditionalFields) {// Note that $tableAliasReplaceMap, and $allAdditionalFieldsMap must be passed as a reference
             /** @var BaseObject $joinModel */
             $joinModel = new $key();
 
-            $joinTablePK = $joinModel->getPrimaryKey();
             $joinDescColumn = $joinModel->getDescColumn("t" . ($i + 1));
             $joinAlias = "t" . ($i + 1);
             $tableAliasReplaceMap[$joinModel->getTableName()] = $joinAlias;
@@ -289,12 +291,16 @@ class DbResourceManager implements ResourceManagerInterface
             if (!empty($joinAdditionalFields)) {
                 $select .= "," . $this->fillAdditionalFieldsSelect($joinAdditionalFields, $model, $keys, $tableAliasReplaceMap);
             }
-            $allAdditionalFieldsMap = array_merge($allAdditionalFieldsMap ?? [], $joinAdditionalFields ?? []);
 
+            $allAdditionalFieldsMap = array_merge($allAdditionalFieldsMap ?? [], $joinAdditionalFields ?? []);
+            $allAdditionalFields = array_merge($allAdditionalFields ?? [], $joinAdditionalFields ?? []);
+
+            $alias = array_search($key, $keysCopy);
+            unset($keysCopy[$alias]);
             if (is_array($joinDescColumn)) {
-                return implode(",", $joinDescColumn) . ', CONCAT(' . implode(",' ',", $joinDescColumn) . ') ' . str_replace("ID", "", $joinTablePK) . $select;
+                return implode(",", $joinDescColumn) . ', CONCAT(' . implode(",' ',", $joinDescColumn) . ') ' . str_replace("ID", "", $alias) . $select;
             }
-            return sprintf("%s as %s", $joinDescColumn, str_replace("ID", "", $joinTablePK)) . $select;
+            return sprintf("%s as %s", $joinDescColumn, str_replace("ID", "", $alias)) . $select;
         }));
 
         if (empty($joins)) {
@@ -348,7 +354,7 @@ class DbResourceManager implements ResourceManagerInterface
         } else {
             return null;
         }
-
+        $result['sql'] = $sql;
         return $result;
     }
 
