@@ -354,7 +354,7 @@ class DbResourceManager implements ResourceManagerInterface
         } else {
             return null;
         }
-        $result['sql'] = $sql;
+
         return $result;
     }
 
