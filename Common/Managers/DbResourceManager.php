@@ -2,7 +2,6 @@
 
 namespace Common\Managers;
 
-use Common\Controllers\RootController;
 use Common\DAOTrait;
 use Common\Managers\Interfaces\ResourceManagerInterface;
 use Common\Models\BaseDAO;
@@ -428,7 +427,6 @@ class DbResourceManager implements ResourceManagerInterface
         $values = rtrim($values, ',');
 
         $whereQuery = "";
-
         foreach ($where as $k => $v) {
             // TODO Clean param and add advanced params (Make function to reuse with the rest)
             $whereQuery .= (empty($whereQuery) ? '' : " AND ") . sprintf(" %s.%s=%s", $model->getTableName(), $k, is_numeric($v) ? $v : "'$v'");
@@ -447,12 +445,17 @@ class DbResourceManager implements ResourceManagerInterface
         ], $data);
     }
 
-    public function deleteWhere(BaseObject $model, string $key, string $value): int
+    public function deleteWhere(BaseObject $model, array $where): int
     {
-        $sql = sprintf('DELETE FROM %s WHERE %s=%s',
+        $whereQuery = "";
+        foreach ($where as $k => $v) {
+            // TODO Clean param and add advanced params (Make function to reuse with the rest)
+            $whereQuery .= (empty($whereQuery) ? '' : " AND ") . sprintf(" %s.%s=%s", $model->getTableName(), $k, is_numeric($v) ? $v : "'$v'");
+        }
+
+        $sql = sprintf('DELETE FROM %s WHERE %s',
             $model->getTableName(),
-            $key,
-            $value
+            $whereQuery
         );
 
         return $this->db->delete($sql, []);
@@ -466,6 +469,15 @@ class DbResourceManager implements ResourceManagerInterface
     public function deleteByID(BaseObject $model, int $id): int
     {
         return $this->deleteWhere($model, $model->getPrimaryKey(), $id);
+    }
+
+    public function archiveByID(BaseObject $model, int $id): int
+    {
+        return $this->updateFromData($model, $id, [
+            'UpdatedByContactID' => $this->IAM->getContactID(),
+            'CreateUpdateDate' => $this->currentDateTime(),
+            'ArchivedDate' => $this->currentDateTime()
+        ]);
     }
 
     /**

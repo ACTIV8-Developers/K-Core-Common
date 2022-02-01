@@ -95,11 +95,10 @@ interface ResourceManagerInterface
      * Deletes object(s) from the database based on the passed parameters.
      * This performs hard delete.
      * @param BaseObject $model
-     * @param string $key
-     * @param string $value
+     * @param array $where
      * @return int (If delete i successful value greater than 0 is returned)
      */
-    public function deleteWhere(BaseObject $model, string $key, string $value): int;
+    public function deleteWhere(BaseObject $model, array $where): int;
 
     /**
      * Same as deleteWhere but with single custom parameters.
@@ -117,4 +116,11 @@ interface ResourceManagerInterface
      * @return int
      */
     public function deleteByID(BaseObject $model, int $id): int;
+
+    /**
+     * @param BaseObject $model
+     * @param int $id
+     * @return int
+     */
+    public function archiveByID(BaseObject $model, int $id): int;
 }
