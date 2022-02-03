@@ -463,12 +463,12 @@ class DbResourceManager implements ResourceManagerInterface
 
     public function deleteBy(BaseObject $model, string $key, string $value): int
     {
-        return $this->deleteWhere($model, $key, $value);
+        return $this->deleteWhere($model, [$key => $value]);
     }
 
     public function deleteByID(BaseObject $model, int $id): int
     {
-        return $this->deleteWhere($model, $model->getPrimaryKey(), $id);
+        return $this->deleteWhere($model, [$model->getPrimaryKey() => $id]);
     }
 
     public function archiveByID(BaseObject $model, int $id): int

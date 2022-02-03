@@ -45,4 +45,13 @@ trait DAOTrait
         }
         return null;
     }
+
+    public function toFrontDate($date, $format = "m/d/Y"): ?string
+    {
+        if ($date) {
+            $dt = Carbon::parse($date);
+            return $dt->format($format);
+        }
+        return null;
+    }
 }
