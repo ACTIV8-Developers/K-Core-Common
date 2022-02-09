@@ -736,10 +736,14 @@ trait ResourceCRUDTrait
                 }
             }
 
+            if (($value === null) && (strpos($type, "DEFAULT") !== false)) {
+                $array = explode(" ", $type);
+                $value = end($array);
+            }
+
             $data[$name] = $value;
 
-            if ((strpos($type, 'NULL') === false) && ($value === null) &&
-                (strpos($type, "DEFAULT") === false)) {
+            if ((strpos($type, 'NULL') === false) && ($value === null)) {
                 $this->logger->info("MISSING_FIELD: " . $name . " = " . $value, [
                     'table' => $model->getTableName()
                 ]);
