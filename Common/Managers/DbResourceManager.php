@@ -527,14 +527,10 @@ class DbResourceManager implements ResourceManagerInterface
                 }
             }
 
-            if (($value === null) && (strpos($type, "DEFAULT") !== false)) {
-                $array = explode(" ", $type);
-                $value = end($array);
-            }
-
             $data[$name] = $value;
 
-            if ((strpos($type, 'NULL') === false) && ($value === null)) {
+            if ((strpos($type, 'NULL') === false) && ($value === null) &&
+                (strpos($type, "DEFAULT") === false)) {
                 return []; // Exit function with no result if one of required fields is missing
             }
         }
