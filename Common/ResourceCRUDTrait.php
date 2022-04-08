@@ -882,18 +882,20 @@ trait ResourceCRUDTrait
                     $value = $this->createRandomHash(date(DEFAULT_SQL_FORMAT));
                 } else if ($name === 'CompanyID') {
                     $value = $this->IAM->getCompanyID();
-                } else if (strpos($type, 'int') === 0) {
-                    $value = $this->filterVar($it[$name], FILTER_SANITIZE_NUMBER_INT);
                 } else {
-                    // Fill from passed data
-                    if (strpos($type, 'int') === 0) {
-                        $value = $this->filterVar($it[$name], FILTER_SANITIZE_NUMBER_INT);
-                    } else if (strpos($type, 'decimal') === 0) {
-                        $value = $this->filterVar($it[$name], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                    } else if (strpos($type, 'datetime') === 0) {
-                        $value = $this->filterVar($it[$name], FILTER_SANITIZE_DATE);
+                    if (empty($it[$name])) {
+                        $value = null;
                     } else {
-                        $value = $this->filterVar($it[$name], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+                        // Fill from passed data
+                        if (strpos($type, 'int') === 0) {
+                            $value = $this->filterVar($it[$name], FILTER_SANITIZE_NUMBER_INT);
+                        } else if (strpos($type, 'decimal') === 0) {
+                            $value = $this->filterVar($it[$name], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                        } else if (strpos($type, 'datetime') === 0) {
+                            $value = $this->filterVar($it[$name], FILTER_SANITIZE_DATE);
+                        } else {
+                            $value = $this->filterVar($it[$name], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+                        }
                     }
                 }
 
@@ -918,72 +920,6 @@ trait ResourceCRUDTrait
 
     /** Utility functions
      * ======================================================================== */
-
-    private function validate($validate, $data, BaseDAO $resourceDao): bool
-    {
-        foreach ($validate as $val) {
-            $i = 0;
-            foreach ($val[0] as $v) {
-                if (strpos($v, '{{') !== false) {
-                    foreach ($this->getBetween($v, "{{", "}}") as $value) {
-                        $val[0][$i] = str_replace("{{" . $value . "}}", "'" . $data[$value] . "'", $val[0][$i]);
-                    }
-                }
-                $i++;
-            }
-            if ($val[1] == 'sql') {
-                $data = $this->db->query($val[0][0])->fetchAll();
-                if ($data[0]['var'] == 0) {
-                    return false;
-                }
-            } else if ($val[1] == 'last') {
-                if ($resourceDao->select("*")->where($val[0][0])->orderBy($resourceDao->getModel()->getPrimaryKey())->order("DESC")->limit(1)->start(0)->getOne() == null)
-                    return false;
-            } else if ($val[1] == 'first') {
-                if ($resourceDao->select("*")->where($val[0][0])->orderBy($resourceDao->getModel()->getPrimaryKey())->order("ASC")->limit(1)->start(0)->getOne() == null)
-                    return false;
-            } else if ($val[1] == 'data') {
-                for ($i = -1; $i < count($val[0]); $i += 3) {
-                    $first = $val[0][$i + 1];
-                    $sign = $val[0][$i + 2];
-                    $second = $val[0][$i + 3];
-
-                    if ($sign == "<") {
-                        if ($first >= $second) {
-                            return false;
-                        }
-                    } else if ($sign == ">") {
-                        if ($first <= $second) {
-                            return false;
-                        }
-                    } else if ($sign == "=") {
-                        if ($first != $second) {
-                            return false;
-                        }
-                    } else if ($sign == "!=") {
-                        if ($first == $second) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private function getBetween($content, $start, $end): array
-    {
-        $n = explode($start, $content);
-        $result = array();
-        foreach ($n as $val) {
-            $pos = strpos($val, $end);
-            if ($pos !== false) {
-                $result[] = substr($val, 0, $pos);
-            }
-        }
-        return $result;
-    }
 
     protected function additionalDataProcess($data)
     {

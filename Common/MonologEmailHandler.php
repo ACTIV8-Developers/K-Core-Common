@@ -22,8 +22,10 @@ class MonologEmailHandler extends AbstractProcessingHandler
 
     protected function write(array $record): void
     {
+
         $data = ['Mails' => $this->emails,
             'Message' =>
+                ("Environment" .APP_MODE) . "<br/>" .
                 ($record['Email'] ?? "") . "<br/>" .
                 ($record['server'] ?? "") . ($record['url'] ?? "") . "<br/>" .
                 ($record['message'] ?? "") . "<br/>" .

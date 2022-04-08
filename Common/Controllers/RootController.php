@@ -13,18 +13,10 @@ use Core\Http\Response;
 use DateTime;
 use PURL;
 
-/**
- * Class RootController
- */
 abstract class RootController extends Controller
 {
     use DAOTrait;
 
-    /**
-     * BaseController constructor.
-     *
-     * @param Container $container
-     */
     public function __construct(Container $container)
     {
         $this->container = $container;
@@ -37,9 +29,9 @@ abstract class RootController extends Controller
      *
      * @param $path
      * @param string $name
-     * @return Response
+     * @return ResponseInterface
      */
-    public function file($path, string $name = "file"): Response
+    public function file($path, string $name = "file"): ResponseInterface
     {
         $response = new Response();
         $response->setHeader('Content-Description', 'File Transfer');
@@ -61,9 +53,9 @@ abstract class RootController extends Controller
      * @param array $data
      * @param int $code
      * @param int $options
-     * @return ResponseInterface|Response
+     * @return ResponseInterface
      */
-    public function json(array $data, int $code = 200, int $options = 0)
+    public function json(array $data, int $code = 200, int $options = 0): ResponseInterface
     {
         $response = new Response();
         $response->headers->set('Content-Type', 'application/json');
@@ -73,7 +65,7 @@ abstract class RootController extends Controller
         return $response;
     }
 
-    public function jsonOutput(OutputResult $data, $code = 200, $codeFailure = 400, int $options = 0)
+    public function jsonOutput(OutputResult $data, $code = 200, $codeFailure = 400, int $options = 0): ResponseInterface
     {
         return $this->json([
             'status' => $data->isOk() ? 1 : 0,
@@ -82,7 +74,7 @@ abstract class RootController extends Controller
         ], $data->isOk() ? $code : $codeFailure, $options);
     }
 
-    public function jsonData($data, $code = 200)
+    public function jsonData($data, $code = 200): ResponseInterface
     {
         if ($data instanceof OutputResult) {
             return $this->json([
@@ -101,7 +93,7 @@ abstract class RootController extends Controller
         return $this->json($result, $code);
     }
 
-    public function jsonCreate($opResult, $code = 201, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
+    public function jsonCreate($opResult, $code = 201, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR'): ResponseInterface
     {
         if ($opResult instanceof OutputResult) {
             return $this->json([
@@ -113,7 +105,7 @@ abstract class RootController extends Controller
         return $this->jsonResponse($opResult, $code, $codeError, $msgOK, $msgError);
     }
 
-    public function jsonUpdate($opResult, $code = 200, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
+    public function jsonUpdate($opResult, $code = 200, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR'): ResponseInterface
     {
         if ($opResult instanceof OutputResult) {
             return $this->json([
@@ -125,7 +117,7 @@ abstract class RootController extends Controller
         return $this->jsonResponse($opResult, $code, $codeError, $msgOK, $msgError);
     }
 
-    public function jsonDelete($opResult, $code = 200, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR')
+    public function jsonDelete($opResult, $code = 200, $codeError = 400, $msgOK = 'OK', $msgError = 'ERROR'): ResponseInterface
     {
         if ($opResult instanceof OutputResult) {
             return $this->json([
@@ -137,7 +129,7 @@ abstract class RootController extends Controller
         return $this->jsonResponse($opResult, $code, $codeError, $msgOK, $msgError);
     }
 
-    public function jsonResponse($opResult, $code, $codeError, $msgOK, $msgError)
+    public function jsonResponse($opResult, $code, $codeError, $msgOK, $msgError): ResponseInterface
     {
         $code = $opResult ? $code : $codeError;
         $result = [
