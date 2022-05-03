@@ -718,7 +718,7 @@ trait ResourceCRUDTrait
                 $value = $this->createRandomHash(date(DEFAULT_SQL_FORMAT));
             } else if ($name === 'CompanyID') {
                 $value = $this->IAM->getCompanyID();
-            } else if (isset($this->container['data']) && !array_key_exists($name, $this->container['data'])) {
+            } else if (isset($this->container['data']) && ($this->container['data'] !== null) && !array_key_exists($name, $this->container['data'])) {
                 continue;
             } else {
                 // Fill from HTTP request data
