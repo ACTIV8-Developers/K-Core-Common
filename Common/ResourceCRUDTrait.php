@@ -718,7 +718,7 @@ trait ResourceCRUDTrait
                 $value = $this->createRandomHash(date(DEFAULT_SQL_FORMAT));
             } else if ($name === 'CompanyID') {
                 $value = $this->IAM->getCompanyID();
-            } else if (isset($this->container['data']) && ($this->container['data'] !== null) && !array_key_exists($name, $this->container['data'])) {
+            } else if (isset($this->container['data']) && !array_key_exists($name, $this->container['data'])) {
                 continue;
             } else {
                 // Fill from HTTP request data
@@ -882,20 +882,18 @@ trait ResourceCRUDTrait
                     $value = $this->createRandomHash(date(DEFAULT_SQL_FORMAT));
                 } else if ($name === 'CompanyID') {
                     $value = $this->IAM->getCompanyID();
+                } else if ((strpos($type, 'int') === 0)) {
+                    $value = $this->filterVar($it[$name] ?? 0, FILTER_SANITIZE_NUMBER_INT);
                 } else {
-                    if (empty($it[$name])) {
-                        $value = null;
+                    // Fill from passed data
+                    if (strpos($type, 'int') === 0) {
+                        $value = $this->filterVar($it[$name] ?? 0, FILTER_SANITIZE_NUMBER_INT);
+                    } else if (strpos($type, 'decimal') === 0) {
+                        $value = $this->filterVar($it[$name] ?? 0, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                    } else if (strpos($type, 'datetime') === 0) {
+                        $value = $this->filterVar($it[$name], FILTER_SANITIZE_DATE);
                     } else {
-                        // Fill from passed data
-                        if (strpos($type, 'int') === 0) {
-                            $value = $this->filterVar($it[$name], FILTER_SANITIZE_NUMBER_INT);
-                        } else if (strpos($type, 'decimal') === 0) {
-                            $value = $this->filterVar($it[$name], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                        } else if (strpos($type, 'datetime') === 0) {
-                            $value = $this->filterVar($it[$name], FILTER_SANITIZE_DATE);
-                        } else {
-                            $value = $this->filterVar($it[$name], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
-                        }
+                        $value = $this->filterVar($it[$name] ?? "", FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
                     }
                 }
 
@@ -917,9 +915,6 @@ trait ResourceCRUDTrait
             return $data;
         });
     }
-
-    /** Utility functions
-     * ======================================================================== */
 
     protected function additionalDataProcess($data)
     {

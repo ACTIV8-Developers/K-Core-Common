@@ -15,7 +15,7 @@ trait DAOTrait
     protected function getDaoForObject($class): BaseDAO
     {
         $dao = (new BaseDAO(new $class));
-        $dao->setContainer($this->container);
+        $dao->db = $this->db;
         return $dao;
     }
 
