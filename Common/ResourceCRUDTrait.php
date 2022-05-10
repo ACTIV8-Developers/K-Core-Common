@@ -882,16 +882,16 @@ trait ResourceCRUDTrait
                     $value = $this->createRandomHash(date(DEFAULT_SQL_FORMAT));
                 } else if ($name === 'CompanyID') {
                     $value = $this->IAM->getCompanyID();
-                } else if ((strpos($type, 'int') === 0)) {
-                    $value = $this->filterVar($it[$name] ?? 0, FILTER_SANITIZE_NUMBER_INT);
+                } else if (strpos($type, 'int') === 0) {
+                    $value = $this->filterVar($it[$name], FILTER_SANITIZE_NUMBER_INT);
                 } else {
                     // Fill from passed data
                     if (strpos($type, 'int') === 0) {
-                        $value = $this->filterVar($it[$name] ?? 0, FILTER_SANITIZE_NUMBER_INT);
+                        $value = $this->filterVar($it[$name] ?? "", FILTER_SANITIZE_NUMBER_INT);
                     } else if (strpos($type, 'decimal') === 0) {
-                        $value = $this->filterVar($it[$name] ?? 0, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                        $value = $this->filterVar($it[$name] ?? "", FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
                     } else if (strpos($type, 'datetime') === 0) {
-                        $value = $this->filterVar($it[$name], FILTER_SANITIZE_DATE);
+                        $value = $this->filterVar($it[$name] ?? "", FILTER_SANITIZE_DATE);
                     } else {
                         $value = $this->filterVar($it[$name] ?? "", FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
                     }
