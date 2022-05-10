@@ -882,8 +882,6 @@ trait ResourceCRUDTrait
                     $value = $this->createRandomHash(date(DEFAULT_SQL_FORMAT));
                 } else if ($name === 'CompanyID') {
                     $value = $this->IAM->getCompanyID();
-                } else if (strpos($type, 'int') === 0) {
-                    $value = $this->filterVar($it[$name], FILTER_SANITIZE_NUMBER_INT);
                 } else {
                     // Fill from passed data
                     if (strpos($type, 'int') === 0) {
