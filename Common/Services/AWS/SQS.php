@@ -52,7 +52,6 @@ class SQS
 
         try {
             $result = $this->client->sendMessage($params);
-            $this->logger->error(SQS::class, $params);
             return $result;
         } catch (AwsException $e) {
             $this->logger->error(SQS::class, [

@@ -236,6 +236,8 @@ abstract class RootController extends Controller
             return null;
         } else if ($filter == FILTER_VALIDATE_EMAIL) {
             $value = trim($value);
+        } else if ($filter == FILTER_SANITIZE_NUMBER_INT) {
+            return (int)filter_var($value, $filter, $option);
         }
 
         return filter_var($value, $filter, $option);
