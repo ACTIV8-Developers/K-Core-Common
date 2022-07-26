@@ -68,7 +68,7 @@ abstract class RootController extends Controller
     public function jsonOutput(OutputResult $data, $code = 200, $codeFailure = 400, int $options = 0): ResponseInterface
     {
         return $this->json([
-            'status' => $data->isOk() ? 1 : 0,
+            'status' => $data->isOk() ? 0 : 1,
             'message' => $data->getMessage(),
             'data' => $data->getData()
         ], $data->isOk() ? $code : $codeFailure, $options);
@@ -78,7 +78,7 @@ abstract class RootController extends Controller
     {
         if ($data instanceof OutputResult) {
             return $this->json([
-                'status' => $data->isOk() ? 1 : 0,
+                'status' => $data->isOk() ? 0 : 1,
                 'message' => $data->getMessage(),
                 'data' => $data->getData()
             ], $code);
@@ -97,7 +97,7 @@ abstract class RootController extends Controller
     {
         if ($opResult instanceof OutputResult) {
             return $this->json([
-                'status' => $opResult->isOk() ? 1 : 0,
+                'status' => $opResult->isOk() ? 0 : 1,
                 'message' => $opResult->getMessage(),
                 'data' => $opResult->getData()
             ], $opResult->isOk() ? $code : 400);
@@ -109,7 +109,7 @@ abstract class RootController extends Controller
     {
         if ($opResult instanceof OutputResult) {
             return $this->json([
-                'status' => $opResult->isOk() ? 1 : 0,
+                'status' => $opResult->isOk() ? 0 : 1,
                 'message' => $opResult->getMessage(),
                 'data' => $opResult->getData()
             ], $opResult->isOk() ? $code : 400);
@@ -121,7 +121,7 @@ abstract class RootController extends Controller
     {
         if ($opResult instanceof OutputResult) {
             return $this->json([
-                'status' => $opResult->isOk() ? 1 : 0,
+                'status' => $opResult->isOk() ? 0 : 1,
                 'message' => $opResult->getMessage(),
                 'data' => $opResult->getData()
             ], $opResult->isOk() ? $code : 400);
@@ -236,8 +236,6 @@ abstract class RootController extends Controller
             return null;
         } else if ($filter == FILTER_VALIDATE_EMAIL) {
             $value = trim($value);
-        } else if ($filter == FILTER_SANITIZE_NUMBER_INT) {
-            return (int)filter_var($value, $filter, $option);
         }
 
         return filter_var($value, $filter, $option);
