@@ -505,6 +505,8 @@ class DbResourceManager implements ResourceManagerInterface
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
                 } else if (strpos($type, 'datetime') === 0 || strpos($type, 'date') === 0) {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_DATE);
+                } else if (strpos($type, 'time') === 0) {
+                    $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_TIME);
                 } else {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
                 }
@@ -560,7 +562,9 @@ class DbResourceManager implements ResourceManagerInterface
 
     protected function filterVar($value, $filter, $option = null)
     {
-        if ($filter == FILTER_SANITIZE_DATE) {
+        if ($filter == FILTER_SANITIZE_TIME) {
+            return empty($value) ? null : filter_var($value, FILTER_SANITIZE_STRING);
+        } else if ($filter == FILTER_SANITIZE_DATE) {
             return $this->sanitizeDate($value);
         } else if ($filter == FILTER_SANITIZE_NUMBER_FLOAT && !is_numeric($value)) {
             return null;
