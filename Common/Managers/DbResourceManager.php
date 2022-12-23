@@ -2,6 +2,7 @@
 
 namespace Common\Managers;
 
+use App\Models\TblLoadStop;
 use Common\DAOTrait;
 use Common\Managers\Interfaces\ResourceManagerInterface;
 use Common\Models\BaseDAO;
@@ -537,6 +538,9 @@ class DbResourceManager implements ResourceManagerInterface
             $data[$name] = $value;
 
             if ((strpos($type, 'NULL') === false) && ($value === null)) {
+                var_dump($model::class);
+                var_dump($name);
+                var_dump($type);die;
                 return []; // Exit function with no result if one of required fields is missing
             }
         }

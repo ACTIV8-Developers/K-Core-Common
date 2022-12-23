@@ -2,6 +2,7 @@
 
 namespace Common;
 
+use Exception;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
 use Purli\Purli;
@@ -22,13 +23,13 @@ class MonologEmailHandler extends AbstractProcessingHandler
 
     protected function write(array $record): void
     {
-
         $data = ['Mails' => $this->emails,
             'Message' =>
-                ("Environment" .APP_MODE) . "<br/>" .
-                ($record['Email'] ?? "") . "<br/>" .
-                ($record['server'] ?? "") . ($record['url'] ?? "") . "<br/>" .
-                ($record['message'] ?? "") . "<br/>" .
+                ("Environment: " . APP_MODE) . "<br/>" .
+                ($record['extra']['Email'] ?? "") . " - " .($record['extra']['ContactID'] ?? "") . "<br/>" .
+                ($record['extra']['http_method'] ?? "") . " " . ($record['extra']['server'] ?? "") . ($record['extra']['url'] ?? "") . "<br/>" .
+                ($record['extra']['ip'] ?? "") . "<br/>" .
+                "<pre>" . ($record['message'] ?? "") . "</pre><br/>" .
                 ($record['trace'] ?? ""),
             'Subject' => "Error happened"
         ];
@@ -39,7 +40,7 @@ class MonologEmailHandler extends AbstractProcessingHandler
             ->post(getenv("NOTIFICATION_SERVICE")."/sendMail")
             ->close();
         } catch (Exception $e) {
-            $this->logger->notice($e->getMessage());
+
         }
     }
 }
