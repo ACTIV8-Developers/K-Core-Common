@@ -2,7 +2,6 @@
 
 namespace Common\Managers;
 
-use App\Models\TblLoadStop;
 use Common\DAOTrait;
 use Common\Managers\Interfaces\ResourceManagerInterface;
 use Common\Models\BaseDAO;
@@ -115,7 +114,7 @@ class DbResourceManager implements ResourceManagerInterface
 
         $select = $tableName . '.*'
             . (!empty($joinsSelects) ? "," . $joinsSelects : "")
-            . (!empty($additionalFields) ? "," . $this->fillAdditionalFieldsSelect($additionalFields, $model, $keys, []) : "");
+            . (!empty($additionalFields) ? "," . $this->fillAdditionalFieldsSelect($additionalFields, $model, $keys, $tableAliasReplaceMap) : "");
 
         $sql = (new BaseDAO($model))
             ->select($select)
@@ -623,7 +622,7 @@ class DbResourceManager implements ResourceManagerInterface
                             case '<=':
                             case '>=':
                             case '=':
-                                if (strpos($fields[$key], 'datetime') !== false) {
+                                if (str_contains($fields[$key] ?? $additionalFields[$key], 'datetime')) {
                                     $queryParam .= sprintf(" AND (CAST(%s AS DATETIME) %s CAST('%s' AS DATETIME))", $searchField, $value[1], $value[2]);
                                 } else {
                                     $queryParam .= sprintf(" AND %s %s '%s' ", $searchField, $value[1], $value[2]);
