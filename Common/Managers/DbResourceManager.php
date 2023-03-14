@@ -312,24 +312,7 @@ class DbResourceManager implements ResourceManagerInterface
          * =============================================================================== */
         $select = $tableName . '.*'
             . (!empty($joinsSelects) ? "," . $joinsSelects : "")
-            . (!empty($additionalFields) ? "," . implode(", ", str_replace("\n", "", $this->map($additionalFields, function ($val, $i, $k) {
-                    return $k . "=" . $val;
-                }))) : "");
-
-        $c = 1;
-        foreach ($keys as $tableOrder) {
-            $m = new $tableOrder();
-            $select = str_replace("{{" . $m->getTableName() . "}}", "t" . $c, $select);
-            $c++;
-        }
-
-        if ($model->getAdditionalFields()) {
-            $select .= (!empty($model->getAdditionalFields()) ? "," . implode(", ", str_replace("\n", "", $this->map($model->getAdditionalFields(), function ($val, $i, $k) {
-                    return $k . "=" . $val;
-                }))) : "");
-        }
-
-        $select = str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $select);
+            . (!empty($additionalFields) ? "," . $this->fillAdditionalFieldsSelect($additionalFields, $model, $keys, $tableAliasReplaceMap) : "");
 
         /** Add to WHERE clause for tables that are part of the multi tenant system (have CompanyID in a field list)
          * and user is a part of the company.
