@@ -236,21 +236,21 @@ class DbResourceManager implements ResourceManagerInterface
         return $this->readListBy($model, [], $where);
     }
 
-    public function findBy(BaseObject $model, string $key, string $value)
+    public function findBy(BaseObject $model, string $key, string $value): ?array
     {
         return $this->findWhere($model, [
             $key => $value
         ]);
     }
 
-    public function findByID(BaseObject $model, int $id)
+    public function findByID(BaseObject $model, int $id): ?array
     {
         return $this->findWhere($model, [
             $model->getPrimaryKey() => $id
         ]);
     }
 
-    public function findWhere(BaseObject $model, array $where)
+    public function findWhere(BaseObject $model, array $where): ?array
     {
         /** Gather information about model.
          * =============================================================================== */

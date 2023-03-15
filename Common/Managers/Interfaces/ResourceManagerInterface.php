@@ -30,26 +30,26 @@ interface ResourceManagerInterface
      * Queries for CompanyID automatically if present in a model and logged in user have CompanyID set (based on IAMInterface)
      * @param BaseObject $model
      * @param array $where
-     * @return mixed
+     * @return ?array
      */
-    public function findWhere(BaseObject $model, array $where);
+    public function findWhere(BaseObject $model, array $where): ?array;
 
     /**
      * Same as findWhere but with single custom parameters.
      * @param BaseObject $model
      * @param string $key
      * @param string $value
-     * @return mixed
+     * @return ?array
      */
-    public function findBy(BaseObject $model, string $key, string $value);
+    public function findBy(BaseObject $model, string $key, string $value): ?array;
 
     /**
      * Same as findWhere but with primary key parameter only.
      * @param BaseObject $model
      * @param int $id
-     * @return mixed
+     * @return ?array
      */
-    public function findByID(BaseObject $model, int $id);
+    public function findByID(BaseObject $model, int $id): ?array;
 
     /**
      * Creates object in the database based on the passed array values.
@@ -70,7 +70,7 @@ interface ResourceManagerInterface
     public function createBulkFromData(BaseObject $model, array $data): int;
 
     /**
-     * Updates object in the database based on the passed $where params
+     * Updates object(s) in the database based on the passed $where params
      * Only fields that are passed in the $data array will be updated.
      * System fields like UpdatedByContactID, CreateUpdateDate, and CompanyID will be auto populated.
      * @param BaseObject $model
@@ -81,7 +81,7 @@ interface ResourceManagerInterface
     public function updateFromDataWhere(BaseObject $model, array $where, array $data): int;
 
     /**
-    * Same as updateFromDataWhere but with primary key value
+     * Same as updateFromDataWhere but with primary key value
      * @param BaseObject $model
      * @param int $id
      * @param array $data
@@ -90,8 +90,6 @@ interface ResourceManagerInterface
     public function updateFromData(BaseObject $model, int $id, array $data): int;
 
     /**
-     * !! Deprecated will be replaced with deleteWhere(BaseObject $model, array $where)
-     *
      * Deletes object(s) from the database based on the passed parameters.
      * This performs hard delete.
      * @param BaseObject $model
