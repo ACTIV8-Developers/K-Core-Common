@@ -2,6 +2,7 @@
 
 namespace Common;
 
+use App\Models\TblContact;
 use Carbon\Carbon;
 use Common\Models\BaseDAO;
 
@@ -53,5 +54,18 @@ trait DAOTrait
             return $dt->format($format);
         }
         return null;
+    }
+
+    public function memberOfGroupQuery($table, $query): string
+    {
+        $ContactID = $this->IAM->getContactID();
+        $Contact = $this->ResourceManager->findByID(new TblContact(), $ContactID);
+
+        $memberQuery = '1=1';
+        if (false && empty($Contact['AllowAccessToAll'])) {
+            $memberQuery = sprintf($table . ".ContactGroupID" . " IN (SELECT tbl_ContactGroups.ContactGroupID FROM tbl_ContactGroups WHERE tbl_ContactGroups.ContactID=%d)", $ContactID);
+        }
+
+        return empty($query) ? $memberQuery : ' AND ' . $memberQuery;
     }
 }
