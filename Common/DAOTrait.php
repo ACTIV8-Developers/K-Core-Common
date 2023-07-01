@@ -2,7 +2,6 @@
 
 namespace Common;
 
-use App\Models\TblContact;
 use Carbon\Carbon;
 use Common\Models\BaseDAO;
 
@@ -58,12 +57,11 @@ trait DAOTrait
 
     public function memberOfGroupQuery($table, $query): string
     {
-        $ContactID = $this->IAM->getContactID();
-        $Contact = $this->ResourceManager->findByID(new TblContact(), $ContactID);
+        $Contact = $this->user['Contact'];
 
         $memberQuery = '1=1';
         if (empty($Contact['AllowAccessToAll'])) {
-            $memberQuery = sprintf($table . ".ContactGroupID" . " IN (SELECT tbl_ContactInGroup.ContactGroupID FROM tbl_ContactInGroup WHERE tbl_ContactInGroup.ContactID=%d)", $ContactID);
+            $memberQuery = sprintf($table . ".ContactGroupID" . " IN (SELECT tbl_ContactInGroup.ContactGroupID FROM tbl_ContactInGroup WHERE tbl_ContactInGroup.ContactID=%d)", $Contact['ContactID']);
         }
 
         return empty($query) ? $memberQuery : ' AND ' . $memberQuery;
