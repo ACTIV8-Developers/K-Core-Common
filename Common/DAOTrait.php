@@ -62,7 +62,7 @@ trait DAOTrait
         $Contact = $this->ResourceManager->findByID(new TblContact(), $ContactID);
 
         $memberQuery = '1=1';
-        if (false && empty($Contact['AllowAccessToAll'])) {
+        if (empty($Contact['AllowAccessToAll'])) {
             $memberQuery = sprintf($table . ".ContactGroupID" . " IN (SELECT tbl_ContactGroups.ContactGroupID FROM tbl_ContactGroups WHERE tbl_ContactGroups.ContactID=%d)", $ContactID);
         }
 

@@ -12,7 +12,9 @@ class S3
 {
     private ?S3Client $client = null;
 
-    public function __construct($config)
+    private string $keyPrefix = "";
+
+    public function __construct($config, $keyPrefix = "")
     {
         $this->client = new S3Client([
             'region' => $config['region'],
@@ -22,6 +24,7 @@ class S3
                 'secret' => $config['secret'],
             ]
         ]);
+        $this->keyPrefix = $keyPrefix;
     }
 
     /**
@@ -32,9 +35,10 @@ class S3
      */
     public function put(string $key, string $filepath, $bucket = "default_bucket")
     {
+        list ($fixKey, $fixBucket) = $this->fixKeyBucket($key, $bucket);
         return $this->client->putObject([
-            'Bucket' => $bucket,
-            'Key' => $key,
+            'Bucket' => $fixBucket,
+            'Key' => $fixKey,
             'SourceFile' => $filepath
         ]);
     }
@@ -46,9 +50,11 @@ class S3
      */
     public function get($key, $bucket = "default_bucket")
     {
+        list ($fixKey, $fixBucket) = $this->fixKeyBucket($key, $bucket);
+
         $result = $this->client->getObject(array(
-            'Bucket' => $bucket,
-            'Key' => $key
+            'Bucket' => $fixBucket,
+            'Key' => $fixKey
         ));
 
         return $result;
@@ -183,7 +189,7 @@ class S3
 
     private function fixKeyBucket($key, $bucket): array
     {
-        return [$key, $bucket];
+        return [!empty($this->keyPrefix) ? $this->keyPrefix . "/" . $key : $key, $bucket];
     }
 
     public function getPath(string $key, string $bucket = 'default_bucket'): string
