@@ -63,7 +63,7 @@ trait DAOTrait
 
         $memberQuery = '1=1';
         if (empty($Contact['AllowAccessToAll'])) {
-            $memberQuery = sprintf($table . ".ContactGroupID" . " IN (SELECT tbl_ContactGroups.ContactGroupID FROM tbl_ContactGroups WHERE tbl_ContactGroups.ContactID=%d)", $ContactID);
+            $memberQuery = sprintf($table . ".ContactGroupID" . " IN (SELECT tbl_ContactInGroup.ContactGroupID FROM tbl_ContactInGroup WHERE tbl_ContactInGroup.ContactID=%d)", $ContactID);
         }
 
         return empty($query) ? $memberQuery : ' AND ' . $memberQuery;
