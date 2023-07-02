@@ -5,6 +5,7 @@ namespace Common\Services\AWS;
 use Aws\Result;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
+use Common\Services\IAM\Interfaces\IAMInterface;
 use Core\Core\Core;
 use Core\Http\Response;
 
@@ -12,9 +13,9 @@ class S3
 {
     private ?S3Client $client = null;
 
-    private string $keyPrefix = "";
+    private ?IAMInterface $IAM;
 
-    public function __construct($config, $keyPrefix = "")
+    public function __construct($config, $IAM = null)
     {
         $this->client = new S3Client([
             'region' => $config['region'],
@@ -24,7 +25,7 @@ class S3
                 'secret' => $config['secret'],
             ]
         ]);
-        $this->keyPrefix = $keyPrefix;
+        $this->IAM = $IAM;
     }
 
     /**
@@ -124,7 +125,8 @@ class S3
     public function getObjectAsFile($key, string $bucket = "default_bucket", bool $forceStream = false, $overrideName = null): array
     {
         $this->client->registerStreamWrapper();
-        $path = 's3://' . $bucket . '/' . $key;
+        list ($fixKey, $fixBucket) = $this->fixKeyBucket($key, $bucket);
+        $path = 's3://' . $fixBucket . '/' . $fixKey;
         $name = (($overrideName !== null) ? $overrideName : $key);
         // HACK
         if (Core::getInstance()->getContainer()->get('request')->get->has('video')) {
@@ -183,13 +185,18 @@ class S3
     public function putFileAsResponse($key, $bucket = "default_bucket", $tmpPath = '/tmp/tmp_name')
     {
         $this->client->registerStreamWrapper();
-        $path = 's3://' . $bucket . '/' . $key;
+        list ($fixKey, $fixBucket) = $this->fixKeyBucket($key, $bucket);
+        $path = 's3://' . $fixBucket . '/' . $fixKey;
         file_put_contents($tmpPath, file_get_contents($path));
     }
 
     private function fixKeyBucket($key, $bucket): array
     {
-        return [!empty($this->keyPrefix) ? $this->keyPrefix . "/" . $key : $key, $bucket];
+        $keyPrefix = null;
+        if (!empty($this->IAM) && ($this->IAM->getCompanyID() !== null)) {
+            $keyPrefix = $this->IAM->getCompanyID();
+        }
+        return [!empty($keyPrefix) ? $keyPrefix . "/" . $key : $key, $bucket];
     }
 
     public function getPath(string $key, string $bucket = 'default_bucket'): string
