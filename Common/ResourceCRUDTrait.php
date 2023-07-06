@@ -285,6 +285,9 @@ trait ResourceCRUDTrait
         if (($limit !== null) && ($offset !== null)) {
             $sql->limit($limit);
             $sql->start($offset);
+        } else {
+            $sql->limit(10);
+            $sql->start(0);
         }
 
         $rt = [
