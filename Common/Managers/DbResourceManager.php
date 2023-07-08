@@ -606,9 +606,9 @@ class DbResourceManager implements ResourceManagerInterface
                             case '>=':
                             case '=':
                                 if (str_contains($fields[$key] ?? $additionalFields[$key], 'datetime')) {
-                                    $queryParam .= sprintf(" AND (CAST(%s AS DATETIME) %s CAST('%s' AS DATETIME))", $searchField, $value[1], $value[2]);
+                                    $queryParam .= sprintf(" AND (CAST(%s AS DATETIME) %s CAST(%s AS DATETIME))", $searchField, $value[1], $this->escape($value[2]));
                                 } else {
-                                    $queryParam .= sprintf(" AND %s %s '%s' ", $searchField, $value[1], $value[2]);
+                                    $queryParam .= sprintf(" AND %s %s %s ", $searchField, $value[1], $this->escape($value[2]));
                                 }
                                 break;
                             default:
@@ -624,7 +624,7 @@ class DbResourceManager implements ResourceManagerInterface
                             $value = implode("','", $value);
                             $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
                         } else {
-                            $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $value);
+                            $queryParam .= sprintf(" AND %s = %s ", $searchField, $this->escape($value));
                         }
                     }
                 }
@@ -632,5 +632,10 @@ class DbResourceManager implements ResourceManagerInterface
         }
 
         return $queryParam;
+    }
+
+    private function escape($inp)
+    {
+        return $this->db->getConnection()->quote($inp);
     }
 }
