@@ -292,8 +292,7 @@ trait ResourceCRUDTrait
 
         $rt = [
             'list' => $sql->getAll(),
-            'count' => $sql->count(),
-            'sql' => $sql->sql()
+            'count' => $sql->count()
         ];
 
         /** Output as EXCEL file

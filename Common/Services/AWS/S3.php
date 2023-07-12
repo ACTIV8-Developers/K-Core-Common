@@ -202,6 +202,7 @@ class S3
     public function getPath(string $key, string $bucket = 'default_bucket'): string
     {
         $this->client->registerStreamWrapper();
-        return 's3://' . $bucket . '/' . $key;
+        list ($fixKey, $fixBucket) = $this->fixKeyBucket($key, $bucket);
+        return 's3://' . $fixBucket . '/' . $fixKey;
     }
 }
