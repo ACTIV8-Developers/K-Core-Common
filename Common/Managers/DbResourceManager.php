@@ -256,7 +256,7 @@ class DbResourceManager implements ResourceManagerInterface
          * =============================================================================== */
         $additionalFields = $model->getAdditionalFields();
         $tableName = $model->getTableName();
-
+        $fields = $model->getTableFields();
         $primaryFields = $model->getTableFields();
         $keys = $model->getTableKeys();
         unset($keys["CompanyID"]);
