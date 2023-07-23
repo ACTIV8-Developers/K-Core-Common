@@ -7,6 +7,7 @@ use Common\Models\BaseObject;
 use Common\Models\BaseDAO;
 use Core\Http\Interfaces\ResponseInterface;
 use Core\Http\Response;
+use const Common\Models\NON_SEARCHABLE_KEYS;
 
 /**
  * Magical Trait that solves all the problems - ResourceCRUDTrait
@@ -168,7 +169,11 @@ trait ResourceCRUDTrait
 
             if (!empty($keys)) {
                 $i = 1;
-                foreach ($keys as $key) {
+                foreach ($keys as $k => $key) {
+                    $nonSearch = $model->getMetaByKey(NON_SEARCHABLE_KEYS);
+                    if (!empty($nonSearch) && !empty($nonSearch[$k])) {
+                        continue;
+                    }
                     $joinModel = new $key();
                     $searchableCol = $joinModel->getSearchableColumns();
                     if (isset($searchableCol[0])) {

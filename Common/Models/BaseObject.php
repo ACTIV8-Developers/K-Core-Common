@@ -7,6 +7,8 @@ use Common\FunctionalTrait;
 const SEARCHABLE_COLUMNS = 1;
 const DESC_COLUMN = 2;
 const EXCEL_COLUMN = 3;
+
+const NON_SEARCHABLE_KEYS = 9;
 const TABLES = 6;
 const ADDITIONAL_FIELDS = 7;
 
