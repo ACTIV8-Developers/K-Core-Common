@@ -53,6 +53,8 @@ trait ResourceCRUDTrait
 
         $searchFields = json_decode($this->get('searchFields'), 1);
 
+        $NotExact = $this->get('NotExact', FILTER_SANITIZE_NUMBER_INT);
+
         /** Gather information about model.
          * =============================================================================== */
         $model = $resourceDao->getModel();
@@ -156,7 +158,7 @@ trait ResourceCRUDTrait
             $queryParam .= (empty($queryParam)) ? " ( " : " AND ( ";
             if (isset($searchableCol[0])) {
                 foreach ($searchableCol as $value) {
-                    $chunks = explode(' ', $query);
+                    $chunks = !!$NotExact ? explode(' ', $query) : [$query];
                     foreach ($chunks as $chunk) {
                         $queryParam .= sprintf("(%s.%s LIKE '%%%s%%') OR ", $tableName, $value, $chunk);
                     }
@@ -171,7 +173,7 @@ trait ResourceCRUDTrait
                     $searchableCol = $joinModel->getSearchableColumns();
                     if (isset($searchableCol[0])) {
                         foreach ($searchableCol as $value) {
-                            $chunks = explode(' ', $query);
+                            $chunks = !!$NotExact ? explode(' ', $query) : [$query];
                             foreach ($chunks as $chunk) {
                                 $queryParam .= sprintf(" (%s.%s LIKE '%%%s%%') OR ", "t" . $i, $value, $chunk);
                             }
