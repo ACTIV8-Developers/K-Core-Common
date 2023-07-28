@@ -20,7 +20,10 @@ trait GeoLocationTrait
             $country = "";
         }
 
-        $state = $this->getDaoForObject(TblState::class)->where(['StateID' => $defaults['StateID']])->getOne();
+        $state = null;
+        if (!empty($defaults['StateID'])) {
+            $state = $this->getDaoForObject(TblState::class)->where(['StateID' => $defaults['StateID']])->getOne();
+        }
         if ($state) {
             $state = $state['State'];
         } else {
@@ -40,9 +43,9 @@ trait GeoLocationTrait
         $data = json_decode(file_get_contents($url), true);
 
         return $data['results'][0]['geometry']['location'] ?? [
-                'lat' => 0,
-                'lng' => 0
-            ];
+            'lat' => 0,
+            'lng' => 0
+        ];
     }
 
     protected function getAddressFromLatLon($defaults = []): array
