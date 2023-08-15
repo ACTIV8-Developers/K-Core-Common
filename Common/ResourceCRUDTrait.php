@@ -7,6 +7,7 @@ use Common\Models\BaseObject;
 use Common\Models\BaseDAO;
 use Core\Http\Interfaces\ResponseInterface;
 use Core\Http\Response;
+use const Common\Models\NON_SEARCHABLE_KEYS;
 
 /**
  * Magical Trait that solves all the problems - ResourceCRUDTrait
