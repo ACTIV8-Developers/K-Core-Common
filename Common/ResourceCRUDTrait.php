@@ -7,7 +7,6 @@ use Common\Models\BaseObject;
 use Common\Models\BaseDAO;
 use Core\Http\Interfaces\ResponseInterface;
 use Core\Http\Response;
-use const Common\Models\NON_SEARCHABLE_KEYS;
 
 /**
  * Magical Trait that solves all the problems - ResourceCRUDTrait
@@ -20,41 +19,26 @@ trait ResourceCRUDTrait
     use GeoLocationTrait;
     use FunctionalTrait;
 
-    /** Set of functions used for automatic READ operations on a single model based on HTTP Request object
-     * ========================================================================
-     * @param BaseDAO $resourceDao
-     * @param bool $output
-     * @param null $overrideParentKey
-     * @param null $where
-     * @param null $overrideID
-     * @return array|ResponseInterface|Response
-     */
-
-    public function handleResourceRead(BaseDAO $resourceDao, bool $output = true, $overrideParentKey = null, $where = null, $overrideID = null)
+    public function handleResourceReadRaw(BaseDAO $resourceDao,
+                                          bool $output = true,
+                                                  $overrideParentKey = null,
+                                                  $where = null,
+                                                  $overrideID = null,
+                                                  $id = null,
+                                                  $query = null,
+                                                  $sort = null,
+                                                  $sortBy = null,
+                                                  $limit = null,
+                                                  $offset = null,
+                                                  $archived = null,
+                                                  $format = null,
+                                                  $ExcludeIDs = null,
+                                                  $searchFields = null,
+                                                  $NotExact = null)
     {
         /** Read user input from Request object.
          * =============================================================================== */
         $CompanyID = $this->IAM->getCompanyID();
-
-        $id = $this->get('id', FILTER_SANITIZE_NUMBER_INT);
-
-        $query = $this->get('query', FILTER_SANITIZE_STRING);
-
-        $sort = $this->get('sort', FILTER_SANITIZE_STRING);
-        $sortBy = $this->get('sortBy', FILTER_SANITIZE_STRING);
-
-        $limit = $this->get('limit', FILTER_SANITIZE_NUMBER_INT);
-        $offset = $this->get('offset', FILTER_SANITIZE_NUMBER_INT);
-
-        $archived = $this->get('archived', FILTER_SANITIZE_NUMBER_INT);
-
-        $format = $this->get('format', FILTER_SANITIZE_STRING);
-
-        $ExcludeIDs = $this->get('ExcludeIDs', FILTER_SANITIZE_STRING);
-
-        $searchFields = json_decode($this->get('searchFields'), 1);
-
-        $NotExact = $this->get('NotExact', FILTER_SANITIZE_NUMBER_INT);
 
         /** Gather information about model.
          * =============================================================================== */
@@ -89,7 +73,6 @@ trait ResourceCRUDTrait
             /** @var BaseObject $model */
             $joinModel = new $key();
 
-            $joinTablePK = $joinModel->getPrimaryKey();
             $joinDescColumn = $joinModel->getDescColumn("t" . ($i + 1));
             $joinAlias = "t" . ($i + 1);
             $tableAliasReplaceMap[$joinModel->getTableName()] = $joinAlias;
@@ -299,17 +282,14 @@ trait ResourceCRUDTrait
 
         $rt = [
             'list' => $sql->getAll(),
-            'count' => $sql->count()
+            'count' => $sql->count(),
+            'sql' => $sql->sql()
         ];
 
         /** Output as EXCEL file
          * =============================================================================== */
         if ($output && ($format === "EMAIL" || $format === "EXCEL")) {
-            $report = (new AbstractReports($this->getContainer(), "export", $format));
-
-//            $sql->limit($limit);// Check for max limit when performance is tested
-//            $sql->start($offset);
-//            $model = $resourceDao->getModel();
+            $report = (new AbstractReports($this->getContainer(), "export_excel", $format));
 
             return $report->generateExel($model, $sql->getAll());
         }
@@ -327,6 +307,57 @@ trait ResourceCRUDTrait
         /** Output as PHP array
          * =============================================================================== */
         return $rt;
+    }
+
+    /** Set of functions used for automatic READ operations on a single model based on HTTP Request object
+     * ========================================================================
+     * @param BaseDAO $resourceDao
+     * @param bool $output
+     * @param null $overrideParentKey
+     * @param null $where
+     * @param null $overrideID
+     * @return array|ResponseInterface|Response
+     */
+    public function handleResourceRead(BaseDAO $resourceDao, bool $output = true, $overrideParentKey = null, $where = null, $overrideID = null)
+    {
+        /** Read user input from Request object.
+         * =============================================================================== */
+        $id = $this->get('id', FILTER_SANITIZE_NUMBER_INT);
+
+        $query = $this->get('query', FILTER_SANITIZE_STRING);
+
+        $sort = $this->get('sort', FILTER_SANITIZE_STRING);
+        $sortBy = $this->get('sortBy', FILTER_SANITIZE_STRING);
+
+        $limit = $this->get('limit', FILTER_SANITIZE_NUMBER_INT);
+        $offset = $this->get('offset', FILTER_SANITIZE_NUMBER_INT);
+
+        $archived = $this->get('archived', FILTER_SANITIZE_NUMBER_INT);
+
+        $format = $this->get('format', FILTER_SANITIZE_STRING);
+
+        $ExcludeIDs = $this->get('ExcludeIDs', FILTER_SANITIZE_STRING);
+
+        $searchFields = json_decode($this->get('searchFields'), 1);
+
+        $NotExact = $this->get('NotExact', FILTER_SANITIZE_NUMBER_INT);
+
+        return $this->handleResourceReadRaw($resourceDao,
+            $output,
+            $overrideParentKey,
+            $where,
+            $overrideID,
+            $id,
+            $query,
+            $sort,
+            $sortBy,
+            $limit,
+            $offset,
+            $archived,
+            $format,
+            $ExcludeIDs,
+            $searchFields,
+            $NotExact);
     }
 
     public function handleSingleResourceRead(BaseDAO $resourceDao, $output = true, $overrideParentKey = null)
