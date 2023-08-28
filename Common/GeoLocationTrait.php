@@ -30,13 +30,14 @@ trait GeoLocationTrait
             $state = "";
         }
 
-        if ($country === "USA") {
-            $country .= "," . $state;
+        $Postal = $defaults['PostalCode'];
+        if (($country === "USA") || ($country === "Canada")) {
+            $Postal .= " " . $state;
         }
 
         $addr = $defaults['AddressName'];
 
-        $addr = $addr . "," . $defaults['CityName'] . "," . $country . " " . $defaults['PostalCode'];
+        $addr = $addr . "," . $defaults['CityName'] . "," . $Postal . "," . $country;
 
         $key = getenv('GOOGLE_MAPS_GEO_KEY');
         $url = sprintf("https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s", rawurlencode($addr), $key);
