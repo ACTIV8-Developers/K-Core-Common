@@ -273,6 +273,14 @@ trait ResourceCRUDTrait
 
         /** Add pagination part of the query.
          * =============================================================================== */
+        /** Output as EXCEL file
+         * =============================================================================== */
+        if ($output && ($format === "EMAIL" || $format === "EXCEL")) {
+            $report = (new AbstractReports($this->getContainer(), "export_excel", $format));
+
+            return $report->generateExel($model, $sql->getAll());
+        }
+
         if (($limit !== null) && ($offset !== null)) {
             $sql->limit($limit);
             $sql->start($offset);
@@ -283,17 +291,8 @@ trait ResourceCRUDTrait
 
         $rt = [
             'list' => $sql->getAll(),
-            'count' => $sql->count(),
-            'sql' => $sql->sql()
+            'count' => $sql->count()
         ];
-
-        /** Output as EXCEL file
-         * =============================================================================== */
-        if ($output && ($format === "EMAIL" || $format === "EXCEL")) {
-            $report = (new AbstractReports($this->getContainer(), "export_excel", $format));
-
-            return $report->generateExel($model, $sql->getAll());
-        }
 
         /** Output as JSON response
          * =============================================================================== */
