@@ -29,7 +29,7 @@ class IAM extends ContainerAware implements IAMInterface
     public function checkPermission(string $resource, int $permission): bool
     {
         $perms = $this->container['permissions'];
-        return $this->permissionCheck($perms[$resource], $permission);
+        return $this->permissionCheck($perms[$resource] ?? 0, $permission);
     }
 
     public function getCompanyID(): ?int
