@@ -35,7 +35,8 @@ trait ResourceCRUDTrait
                                                   $format = null,
                                                   $ExcludeIDs = null,
                                                   $searchFields = null,
-                                                  $NotExact = null)
+                                                  $NotExact = null,
+                                                  $customSelect = null)
     {
         /** Read user input from Request object.
          * =============================================================================== */
@@ -109,9 +110,9 @@ trait ResourceCRUDTrait
             }
         }
 
-        $select = $tableName . '.*'
+        $select = !empty($customSelect) ? $customSelect : ($tableName . '.*'
             . (!empty($joinsSelects) ? "," . $joinsSelects : "")
-            . (!empty($additionalFields) ? "," . $this->fillAdditionalFieldsSelect($additionalFields, $model, $keys, []) : "");
+            . (!empty($additionalFields) ? "," . $this->fillAdditionalFieldsSelect($additionalFields, $model, $keys, []) : ""));
 
         $select = str_replace("[[key]]", $id, $select);
 
@@ -318,7 +319,11 @@ trait ResourceCRUDTrait
      * @param null $overrideID
      * @return array|ResponseInterface|Response
      */
-    public function handleResourceRead(BaseDAO $resourceDao, bool $output = true, $overrideParentKey = null, $where = null, $overrideID = null)
+    public function handleResourceRead(BaseDAO $resourceDao,
+
+                                       bool $output = true, $overrideParentKey = null, $where = null,
+                                               $overrideID = null,
+                                               $customSelect = null)
     {
         /** Read user input from Request object.
          * =============================================================================== */
@@ -357,7 +362,8 @@ trait ResourceCRUDTrait
             $format,
             $ExcludeIDs,
             $searchFields,
-            $NotExact);
+            $NotExact,
+            $customSelect);
     }
 
     public function handleSingleResourceRead(BaseDAO $resourceDao, $output = true, $overrideParentKey = null)
