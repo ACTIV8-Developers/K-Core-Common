@@ -20,7 +20,7 @@ class CustomCorsMiddleware extends ContainerAware
      *
      * @param Container $container
      */
-    public function __construct(Container $container, string $headers = "Origin, Authorization, Content-Type, Accept-Ranges")
+    public function __construct(Container $container, string $headers = "Origin, Authorization, Content-Type, Accept-Ranges, X-Client")
     {
         $this->container = $container;
         $this->headers = $headers;

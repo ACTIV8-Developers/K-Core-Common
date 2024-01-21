@@ -498,8 +498,7 @@ trait ResourceCRUDTrait
             return $this->json([
                 'status' => 0,
                 'message' => 'OK',
-                'data' => $result,
-                'sql' => $sql->sql()
+                'data' => $result
             ]);
         }
 

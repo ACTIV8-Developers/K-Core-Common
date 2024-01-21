@@ -23,6 +23,6 @@ class InternalErrorHook extends ContainerAware
 
         return (new Response())
             ->setStatusCode(500)
-            ->setBody(json_encode(['']));
+            ->setBody("");
     }
 }

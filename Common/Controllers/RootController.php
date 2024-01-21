@@ -163,7 +163,7 @@ abstract class RootController extends Controller
      * @param null $filter
      * @return mixed
      */
-    public function get($key = null, $filter = null)
+    public function get($key = null, $filter = null, $option = null)
     {
         if ($key !== null) {
             if (!$this->request->get->has($key)) {

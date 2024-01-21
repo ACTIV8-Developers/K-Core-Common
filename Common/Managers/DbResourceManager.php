@@ -220,8 +220,7 @@ class DbResourceManager implements ResourceManagerInterface
 
         return [
             'list' => $sql->getAll(),
-            'count' => $sql->count(),
-            'sql' => $sql->sql()
+            'count' => $sql->count()
         ];
     }
 
