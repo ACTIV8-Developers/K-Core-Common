@@ -12,6 +12,7 @@ use Core\Container\Container;
 use Core\Database\Interfaces\DatabaseInterface;
 use Exception;
 use Psr\Container\ContainerInterface;
+use Ramsey\Uuid\Uuid;
 
 class DbResourceManager implements ResourceManagerInterface
 {
@@ -481,13 +482,13 @@ class DbResourceManager implements ResourceManagerInterface
             // Take passed data firsts
             if (array_key_exists($name, $inputData)) {
                 // Fill from passed data
-                if (strpos($type, 'int') === 0) {
+                if (str_starts_with($type, 'int')) {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_NUMBER_INT);
-                } else if (strpos($type, 'decimal') === 0) {
+                } else if (str_starts_with($type, 'decimal')) {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                } else if (strpos($type, 'datetime') === 0 || strpos($type, 'date') === 0) {
+                } else if (str_starts_with($type, 'datetime') || str_starts_with($type, 'date')) {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_DATE);
-                } else if (strpos($type, 'time') === 0) {
+                } else if (str_starts_with($type, 'time')) {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_TIME);
                 } else {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_INPUT_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
@@ -505,20 +506,20 @@ class DbResourceManager implements ResourceManagerInterface
                 ) {
                     continue;
                 } else if ($name === 'AutoToken') {
-                    $value = $this->createRandomHash(date(DEFAULT_SQL_FORMAT));
+                    $value = $this->createRandomHash();
                 } else if ($name === 'CompanyID') {
                     $value = $this->IAM->getCompanyID();
                 }
             }
 
-            if (($value === null) && (strpos($type, "DEFAULT") !== false)) {
+            if (($value === null) && (str_contains($type, "DEFAULT"))) {
                 $array = explode(" ", $type);
                 $value = end($array);
             }
 
             $data[$name] = $value;
 
-            if ((strpos($type, 'NULL') === false) && ($value === null)) {
+            if ((!str_contains($type, 'NULL')) && ($value === null)) {
                 var_dump($model::class);
                 var_dump($name);
                 var_dump($type);die;
@@ -545,11 +546,9 @@ class DbResourceManager implements ResourceManagerInterface
         })));
     }
 
-    protected function filterVar($value, $filter, $option = null)
+    protected function filterVar($value, int $filter, ?int $option = 0): mixed
     {
-        if ($filter == FILTER_SANITIZE_TIME) {
-            return empty($value) ? null : filter_var($value, FILTER_SANITIZE_INPUT_STRING);
-        } else if ($filter == FILTER_SANITIZE_DATE) {
+        if ($filter == FILTER_SANITIZE_DATE) {
             return $this->sanitizeDate($value);
         } else if ($filter == FILTER_SANITIZE_NUMBER_FLOAT && !is_numeric($value)) {
             return null;
@@ -557,6 +556,8 @@ class DbResourceManager implements ResourceManagerInterface
             return null;
         } else if ($filter == FILTER_VALIDATE_EMAIL) {
             $value = trim($value);
+        } else if ($filter == FILTER_SANITIZE_INPUT_STRING) {
+            return trim($value);
         }
 
         return filter_var($value, $filter, $option);
@@ -573,9 +574,9 @@ class DbResourceManager implements ResourceManagerInterface
         return ($d && $d->format($format) === $value) ? $value : null;
     }
 
-    protected function createRandomHash($value)
+    protected function createRandomHash(): string
     {
-        return substr(hash('sha512', $value . rand(1, 100)), 0, 24);
+        return Uuid::uuid4()->toString();
     }
 
     /**
