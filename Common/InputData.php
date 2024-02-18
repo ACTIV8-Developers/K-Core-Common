@@ -58,7 +58,7 @@ class InputData implements \ArrayAccess, \Countable, \IteratorAggregate
         return $this->data[$key] ?? null;
     }
 
-    protected function filterVar($value, $filter, $option = null)
+    protected function filterVar($value, int $filter, ?int $option = 0): mixed
     {
         if ($filter == FILTER_SANITIZE_DATE) {
             return $this->sanitizeDate($value);
@@ -68,6 +68,8 @@ class InputData implements \ArrayAccess, \Countable, \IteratorAggregate
             return null;
         } else if ($filter == FILTER_VALIDATE_EMAIL) {
             $value = trim($value);
+        } else if ($filter == FILTER_SANITIZE_INPUT_STRING) {
+            return trim($value);
         }
 
         return filter_var($value, $filter, $option);
