@@ -2,9 +2,11 @@
 
 namespace Common\Models;
 
+use Core\Container\Interfaces\ContainerAwareInterface;
 use Core\Core\Model;
 use Core\Database\Interfaces\DatabaseInterface;
 use PDO;
+use Psr\Container\ContainerInterface;
 
 /**
  * Class BaseDAO
@@ -73,6 +75,11 @@ class BaseDAO extends Model
      * @var array|string
      */
     protected $join = null;
+
+    /**
+     * @var ?DatabaseInterface
+     */
+    public ?DatabaseInterface $database = null;
 
     /**
      * @param BaseObject $o
@@ -151,7 +158,7 @@ class BaseDAO extends Model
             $sql .= sprintf(' OFFSET %d ROWS FETCH NEXT %d ROWS ONLY', $this->start, $this->limit);
         }
 
-        return $this->db->select($sql, $values, $type);
+        return $this->db()->select($sql, $values, $type);
     }
 
     public function sql(): string
@@ -205,7 +212,7 @@ class BaseDAO extends Model
      */
     public function get($id): ?array
     {
-        $data = $this->db->select(sprintf('SELECT * FROM %s WHERE %s=:id',
+        $data = $this->db()->select(sprintf('SELECT * FROM %s WHERE %s=:id',
                 $this->table, $this->pk)
             , ['id' => $id]);
 
@@ -221,7 +228,7 @@ class BaseDAO extends Model
      */
     public function countAll(): int
     {
-        return $this->db->select(sprintf('SELECT COUNT(%s) as cnt FROM %s',
+        return $this->db()->select(sprintf('SELECT COUNT(%s) as cnt FROM %s',
             $this->pk,
             $this->table
         ))[0]['cnt'];
@@ -260,7 +267,7 @@ class BaseDAO extends Model
             }
         }
 
-        $result = $this->db->select($sql, $values);
+        $result = $this->db()->select($sql, $values);
 
         return $result[0]['cnt'] ?? 0;
     }
@@ -279,8 +286,8 @@ class BaseDAO extends Model
 
         $sql = sprintf("INSERT INTO " . $this->table . " (%s) VALUES (:%s)", $columns, $values);
 
-        if ($this->db->insert($sql, $data)) {
-            return $this->db->lastInsertId();
+        if ($this->db()->insert($sql, $data)) {
+            return $this->db()->lastInsertId();
         }
         return null;
     }
@@ -317,7 +324,7 @@ class BaseDAO extends Model
         $sql = sprintf("UPDATE %s SET %s WHERE %s=%s",
             $this->table, $values, $this->pk, is_string($id) ? "'$id'" : $id);
 
-        return $this->db->update($sql, $data);
+        return $this->db()->update($sql, $data);
     }
 
     public function bulkUpdate(array $ids, array $data): int
@@ -341,7 +348,7 @@ class BaseDAO extends Model
         $sql = sprintf("UPDATE %s SET %s WHERE %s IN (%s)",
             $this->table, $values, $this->pk, $finalIds);
 
-        return $this->db->update($sql, []);
+        return $this->db()->update($sql, []);
     }
 
     public function bulkInsert(array $data): int
@@ -368,7 +375,7 @@ class BaseDAO extends Model
         $val = implode(",", $val);
         $sql = sprintf("INSERT INTO " . $this->table . " (%s) VALUES %s", $columns, $val);
 
-        return $this->db->insert($sql, $insertData);
+        return $this->db()->insert($sql, $insertData);
     }
 
     public function updateWhere($where, $data): int
@@ -397,7 +404,7 @@ class BaseDAO extends Model
             }
         }
 
-        return $this->db->update($sql, array_merge(is_array($where) ? $where : [], $data));
+        return $this->db()->update($sql, array_merge(is_array($where) ? $where : [], $data));
     }
 
     /**
@@ -425,7 +432,7 @@ class BaseDAO extends Model
             }
         }
 
-        return $this->db->delete($sql, is_array($where) ? $where : []);
+        return $this->db()->delete($sql, is_array($where) ? $where : []);
     }
 
     /**
@@ -440,7 +447,7 @@ class BaseDAO extends Model
             $id
         );
 
-        return $this->db->delete($sql, []);
+        return $this->db()->delete($sql, []);
     }
 
     /**
@@ -461,5 +468,22 @@ class BaseDAO extends Model
     public function getModel(): BaseObject
     {
         return $this->model;
+    }
+
+    public function setContainer(ContainerInterface $container): ContainerAwareInterface
+    {
+        $this->container = $container;
+        $this->database = $container['db'];
+        return $this;
+    }
+
+    private function db(): DatabaseInterface
+    {
+        return $this->database;
+    }
+
+    public function setDb(DatabaseInterface $db): void
+    {
+        $this->database = $db;
     }
 }

@@ -222,11 +222,11 @@ abstract class RootController extends Controller
 
     /**
      * @param $value
-     * @param $filter
-     * @param null $option
+     * @param int $filter
+     * @param int|null $option
      * @return mixed
      */
-    protected function filterVar($value, $filter, $option = null)
+    protected function filterVar($value, int $filter, ?int $option = 0): mixed
     {
         if ($filter == FILTER_SANITIZE_DATE) {
             return $this->sanitizeDate($value);
@@ -236,6 +236,8 @@ abstract class RootController extends Controller
             return null;
         } else if ($filter == FILTER_VALIDATE_EMAIL) {
             $value = trim($value);
+        } else if ($filter == FILTER_SANITIZE_INPUT_STRING) {
+            return trim($value);
         }
 
         return filter_var($value, $filter, $option);

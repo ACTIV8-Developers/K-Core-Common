@@ -114,7 +114,7 @@ trait ResourceCRUDTrait
             . (!empty($joinsSelects) ? "," . $joinsSelects : "")
             . (!empty($additionalFields) ? "," . $this->fillAdditionalFieldsSelect($additionalFields, $model, $keys, []) : ""));
 
-        $select = str_replace("[[key]]", $id, $select);
+        $select = str_replace("[[key]]", $id ?? "", $select);
 
         $sql = $resourceDao
             ->select($select)
@@ -329,19 +329,19 @@ trait ResourceCRUDTrait
          * =============================================================================== */
         $id = $this->get('id', FILTER_SANITIZE_NUMBER_INT);
 
-        $query = $this->get('query', FILTER_SANITIZE_STRING);
+        $query = $this->get('query', FILTER_SANITIZE_INPUT_STRING);
 
-        $sort = $this->get('sort', FILTER_SANITIZE_STRING);
-        $sortBy = $this->get('sortBy', FILTER_SANITIZE_STRING);
+        $sort = $this->get('sort', FILTER_SANITIZE_INPUT_STRING);
+        $sortBy = $this->get('sortBy', FILTER_SANITIZE_INPUT_STRING);
 
         $limit = $this->get('limit', FILTER_SANITIZE_NUMBER_INT);
         $offset = $this->get('offset', FILTER_SANITIZE_NUMBER_INT);
 
         $archived = $this->get('archived', FILTER_SANITIZE_NUMBER_INT);
 
-        $format = $this->get('format', FILTER_SANITIZE_STRING);
+        $format = $this->get('format', FILTER_SANITIZE_INPUT_STRING);
 
-        $ExcludeIDs = $this->get('ExcludeIDs', FILTER_SANITIZE_STRING);
+        $ExcludeIDs = $this->get('ExcludeIDs', FILTER_SANITIZE_INPUT_STRING);
 
         $searchFields = json_decode($this->get('searchFields'), 1);
 
@@ -777,7 +777,7 @@ trait ResourceCRUDTrait
                     || ($name === "ReceivingHours")) {
                     $value = json_encode($this->data($name));
                 } else {
-                    $value = $this->data($name, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+                    $value = $this->data($name, FILTER_SANITIZE_INPUT_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
                 }
             }
 
@@ -857,7 +857,7 @@ trait ResourceCRUDTrait
                 } else if (strpos($type, 'datetime') === 0) {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_DATE);
                 } else {
-                    $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+                    $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_INPUT_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
                 }
             }
 
@@ -936,7 +936,7 @@ trait ResourceCRUDTrait
                     } else if (strpos($type, 'datetime') === 0) {
                         $value = $this->filterVar($it[$name] ?? "", FILTER_SANITIZE_DATE);
                     } else {
-                        $value = $this->filterVar($it[$name] ?? "", FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+                        $value = $this->filterVar($it[$name] ?? "", FILTER_SANITIZE_INPUT_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
                     }
                 }
 

@@ -90,17 +90,15 @@ class InputData implements \ArrayAccess, \Countable, \IteratorAggregate
             return null;
         }
 
-        if (strpos($type, 'int') === 0) {
+        if (str_starts_with($type, 'int')) {
             $value = $this->filterVar($value, FILTER_SANITIZE_NUMBER_INT);
-        } else if (strpos($type, 'decimal') === 0) {
+        } else if (str_starts_with($type, 'decimal')) {
             $value = $this->filterVar($value, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-        } else if (strpos($type, 'datetime') === 0) {
+        } else if (str_starts_with($type, 'datetime')) {
             $value = $this->filterVar($value, FILTER_SANITIZE_DATE);
         } else {
-            $value = $this->filterVar($value, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+            // TODO specific filters, throw exception if not valid
         }
-
-        // TODO specific filters, throw exception if not valid
 
         return $value;
     }
@@ -110,7 +108,7 @@ class InputData implements \ArrayAccess, \Countable, \IteratorAggregate
         return isset($this->data[$offset]);
     }
 
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         if (isset($this->data[$offset])) {
             return $this->data[$offset];
@@ -118,12 +116,12 @@ class InputData implements \ArrayAccess, \Countable, \IteratorAggregate
         return null;
     }
 
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->data[$offset] = $value;
     }
 
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->data[$offset]);
     }

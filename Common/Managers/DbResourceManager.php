@@ -490,7 +490,7 @@ class DbResourceManager implements ResourceManagerInterface
                 } else if (strpos($type, 'time') === 0) {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_TIME);
                 } else {
-                    $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+                    $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_INPUT_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
                 }
             } else {
                 if ($name === 'UpdatedByContactID') {
@@ -548,7 +548,7 @@ class DbResourceManager implements ResourceManagerInterface
     protected function filterVar($value, $filter, $option = null)
     {
         if ($filter == FILTER_SANITIZE_TIME) {
-            return empty($value) ? null : filter_var($value, FILTER_SANITIZE_STRING);
+            return empty($value) ? null : filter_var($value, FILTER_SANITIZE_INPUT_STRING);
         } else if ($filter == FILTER_SANITIZE_DATE) {
             return $this->sanitizeDate($value);
         } else if ($filter == FILTER_SANITIZE_NUMBER_FLOAT && !is_numeric($value)) {

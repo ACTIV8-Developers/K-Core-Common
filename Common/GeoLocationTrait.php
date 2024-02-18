@@ -118,15 +118,15 @@ trait GeoLocationTrait
         if (!empty($StateID)) {
             $where .= (empty($where) ? "" : " AND ") . sprintf('StateID=%d', $StateID);
         }
-        $AddressName = $this->data('AddressName', FILTER_SANITIZE_STRING);
+        $AddressName = $this->data('AddressName', FILTER_SANITIZE_INPUT_STRING);
         if (!empty($AddressName)) {
             $where .= (empty($where) ? "" : " AND ") . sprintf("AddressName='%s'", $AddressName);
         }
-        $CityName = $this->data('CityName', FILTER_SANITIZE_STRING);
+        $CityName = $this->data('CityName', FILTER_SANITIZE_INPUT_STRING);
         if (!empty($CityName)) {
             $where .= (empty($where) ? "" : " AND ") . sprintf("CityName='%s'", $CityName);
         }
-        $PostalCode = $this->data('PostalCode', FILTER_SANITIZE_STRING);
+        $PostalCode = $this->data('PostalCode', FILTER_SANITIZE_INPUT_STRING);
         if (!empty($PostalCode)) {
             $where .= (empty($where) ? "" : " AND ") . sprintf('PostalCode=%d', $PostalCode);
         }
