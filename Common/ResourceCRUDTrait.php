@@ -343,7 +343,7 @@ trait ResourceCRUDTrait
 
         $ExcludeIDs = $this->get('ExcludeIDs', FILTER_SANITIZE_INPUT_STRING);
 
-        $searchFields = json_decode($this->get('searchFields'), 1);
+        $searchFields = json_decode($this->get('searchFields') ?? "{}", 1);
 
         $NotExact = $this->get('NotExact', FILTER_SANITIZE_NUMBER_INT);
 
