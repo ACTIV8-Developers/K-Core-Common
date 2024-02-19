@@ -407,7 +407,7 @@ class DbResourceManager implements ResourceManagerInterface
         foreach ($data as $key => $value) {
             $values .= ($key . "=:" . $key . ",");
         }
-        $values = rtrim($values, ',');
+        $values = rtrim($values ?? "", ',');
 
         $whereQuery = "";
         foreach ($where as $k => $v) {
@@ -555,9 +555,9 @@ class DbResourceManager implements ResourceManagerInterface
         } else if ($filter == FILTER_SANITIZE_NUMBER_INT && !is_numeric($value)) {
             return null;
         } else if ($filter == FILTER_VALIDATE_EMAIL) {
-            $value = trim($value);
+            return $value;
         } else if ($filter == FILTER_SANITIZE_INPUT_STRING) {
-            return trim($value);
+            return $value;
         }
 
         return filter_var($value, $filter, $option);

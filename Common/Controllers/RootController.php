@@ -163,14 +163,14 @@ abstract class RootController extends Controller
      * @param null $filter
      * @return mixed
      */
-    public function get($key = null, $filter = null, $option = null)
+    public function get($key = null, $filter = null, int $option = 0): mixed
     {
         if ($key !== null) {
             if (!$this->request->get->has($key)) {
                 return null;
             }
             if ($filter !== null) {
-                return $this->filterVar($this->request->get->get($key), $filter);
+                return $this->filterVar($this->request->get->get($key), $filter, $option);
             } else {
                 return $this->request->get->get($key);
             }
@@ -183,7 +183,7 @@ abstract class RootController extends Controller
      * @param null $filter
      * @return mixed
      */
-    public function post($key = null, $filter = null)
+    public function post($key = null, $filter = null): mixed
     {
         if ($key !== null) {
             if (!$this->request->post->has($key)) {
@@ -199,12 +199,12 @@ abstract class RootController extends Controller
     }
 
     /**
-     * @param $key
+     * @param null $key
      * @param null $filter
-     * @param null $option
+     * @param int $option
      * @return mixed
      */
-    public function data($key = null, $filter = null, $option = null)
+    public function data($key = null, $filter = null, int $option = 0): mixed
     {
         if ($key !== null) {
             if (isset($this->container['data'][$key])) {
@@ -235,9 +235,9 @@ abstract class RootController extends Controller
         } else if ($filter == FILTER_SANITIZE_NUMBER_INT && !is_numeric($value)) {
             return null;
         } else if ($filter == FILTER_VALIDATE_EMAIL) {
-            $value = trim($value);
+            return $value;
         } else if ($filter == FILTER_SANITIZE_INPUT_STRING) {
-            return trim($value);
+            return $value;
         }
 
         return filter_var($value, $filter, $option);
@@ -262,7 +262,7 @@ abstract class RootController extends Controller
         return $headers;
     }
 
-    protected function getBearerToken()
+    protected function getBearerToken(): ?string
     {
         $headers = $this->getAuthorizationHeader();
         // HEADER: Get the access token from the header
