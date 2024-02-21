@@ -489,7 +489,7 @@ class DbResourceManager implements ResourceManagerInterface
                 } else if (str_starts_with($type, 'datetime') || str_starts_with($type, 'date')) {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_DATE);
                 } else if (str_starts_with($type, 'time')) {
-                    $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_TIME);
+                    $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_INPUT_STRING);
                 } else {
                     $value = $this->filterVar($inputData[$name], FILTER_SANITIZE_INPUT_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
                 }
