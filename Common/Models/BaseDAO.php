@@ -66,6 +66,8 @@ class BaseDAO extends Model
      */
     protected ?int $limit = null;
 
+    protected ?int $offset = null;
+
     /**
      * @var string|array
      */
