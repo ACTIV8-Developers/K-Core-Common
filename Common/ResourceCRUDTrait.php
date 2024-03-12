@@ -292,7 +292,8 @@ trait ResourceCRUDTrait
 
         $rt = [
             'list' => $sql->getAll(),
-            'count' => $sql->count()
+            'count' => $sql->count(),
+            'sql' => $sql->sql()
         ];
 
         /** Output as JSON response
