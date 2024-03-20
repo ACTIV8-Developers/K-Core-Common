@@ -2,17 +2,16 @@
 
 namespace Common\Services\OAuth;
 
-use Core\Auth\PasswordHash;
 
 class Hasher
 {
     private static ?Hasher $instance = null;
 
-    private ?PasswordHash $hash;
+    private ?PasswordHashInternal $hash;
 
     private function __construct()
     {
-        $this->hash = (new PasswordHash(8, false));
+        $this->hash = (new PasswordHashInternal(8, false));
     }
 
     public static function getInstance(): Hasher
