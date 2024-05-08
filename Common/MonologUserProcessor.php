@@ -24,8 +24,8 @@ class MonologUserProcessor extends ContainerAware implements ProcessorInterface
 
     private function appendExtraFields(array $extra): array
     {
-        $extra['ContactID'] = $this->container['user']['ContactID'];
-        $extra['Email'] = $this->container['user']['user_id'];
+        $extra['ContactID'] = $this->container['user']['ContactID'] ?? 0;
+        $extra['Email'] = $this->container['user']['user_id'] ?? 0;
         return $extra;
     }
 }

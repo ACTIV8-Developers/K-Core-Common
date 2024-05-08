@@ -12,6 +12,7 @@ use Core\Http\Interfaces\ResponseInterface;
 use Core\Http\Response;
 use DateTime;
 use PURL;
+use Ramsey\Uuid\Uuid;
 
 abstract class RootController extends Controller
 {
@@ -414,9 +415,12 @@ abstract class RootController extends Controller
         return '.' . end($x);
     }
 
-    protected function createRandomHash($value)
+    protected function createRandomHash($value): string
     {
-        return substr(hash('sha512', $value . rand(1, 100)), 0, 24);
+        return
+            substr(hash('sha512', $value . rand(1, 100)), 0, 6)
+            . "-"
+            . Uuid::uuid4()->toString();
     }
 
     protected function phoneNumber($areaCode, $phoneNumber, $phoneExtension): string
@@ -424,7 +428,7 @@ abstract class RootController extends Controller
         return ($areaCode ? '(' . $areaCode . ') ' : '') . $phoneNumber . ' ' . $phoneExtension;
     }
 
-    protected function slugify($string, $separator = '-')
+    protected function slugify($string, $separator = '-'): array|string|null
     {
         $accents_regex = '~&([a-z]{1,2})(?:acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml);~i';
         $special_cases = array('&' => 'and', "'" => '');
