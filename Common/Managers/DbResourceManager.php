@@ -149,7 +149,7 @@ class DbResourceManager implements ResourceManagerInterface
                 foreach ($searchableCol as $value) {
                     $chunks = explode(' ', $query);
                     foreach ($chunks as $chunk) {
-                        $queryParam .= sprintf("(%s.%s LIKE '%%%s%%') OR ", $tableName, $value, $chunk);
+                        $queryParam .= sprintf("(%s.%s LIKE '%%%s%%') OR ", $tableName, $value, $this->escapeQueryParam($chunk));
                     }
                     $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
                 }
@@ -164,7 +164,7 @@ class DbResourceManager implements ResourceManagerInterface
                         foreach ($searchableCol as $value) {
                             $chunks = explode(' ', $query);
                             foreach ($chunks as $chunk) {
-                                $queryParam .= sprintf(" (%s.%s LIKE '%%%s%%') OR ", "t" . $i, $value, $chunk);
+                                $queryParam .= sprintf(" (%s.%s LIKE '%%%s%%') OR ", "t" . $i, $value, $this->escapeQueryParam($chunk));
                             }
                             $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
                         }
@@ -605,10 +605,11 @@ class DbResourceManager implements ResourceManagerInterface
                             case '<=':
                             case '>=':
                             case '=':
+                            case 'LIKE':
                                 if (str_contains($fields[$key] ?? $additionalFields[$key], 'datetime')) {
-                                    $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST(%s AS DATE))", $searchField, $value[1], $this->escape($value[2]));
+                                    $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST(%s AS DATE))", $searchField, $value[1], $this->escapeQueryParam($value[2]));
                                 } else {
-                                    $queryParam .= sprintf(" AND %s %s %s ", $searchField, $value[1], $this->escape($value[2]));
+                                    $queryParam .= sprintf(" AND %s %s '%s' ", $searchField, $value[1], $this->escapeQueryParam($value[2]));
                                 }
                                 break;
                             default:
@@ -624,7 +625,7 @@ class DbResourceManager implements ResourceManagerInterface
                             $value = implode("','", $value);
                             $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
                         } else {
-                            $queryParam .= sprintf(" AND %s = %s ", $searchField, $this->escape($value));
+                            $queryParam .= sprintf(" AND %s = %s ", $searchField, $this->escapeQueryParam($value));
                         }
                     }
                 }
@@ -634,8 +635,16 @@ class DbResourceManager implements ResourceManagerInterface
         return $queryParam;
     }
 
-    private function escape($inp)
+    protected function escapeQueryParam($input)
     {
-        return $this->db->getConnection()->quote($inp);
+        // Replace single quotes and double quotes
+        $input = str_replace("'", "''", $input);
+        $input = str_replace('"', '""', $input);
+
+        // Optionally escape other characters like semicolons if necessary
+        $input = str_replace(";", "\\;", $input);
+        $input = str_replace(",", "\\,", $input);
+
+        return $input;
     }
 }

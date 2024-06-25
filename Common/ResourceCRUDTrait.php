@@ -146,7 +146,7 @@ trait ResourceCRUDTrait
                 foreach ($searchableCol as $value) {
                     $chunks = !!$NotExact ? explode(' ', $query) : [$query];
                     foreach ($chunks as $chunk) {
-                        $queryParam .= sprintf("(%s.%s LIKE '%%%s%%') OR ", $tableName, $value, $chunk);
+                        $queryParam .= sprintf("(%s.%s LIKE '%%%s%%') OR ", $tableName, $value, $this->escapeQueryParam($chunk));
                     }
                     $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
                 }
@@ -165,7 +165,7 @@ trait ResourceCRUDTrait
                         foreach ($searchableCol as $value) {
                             $chunks = !!$NotExact ? explode(' ', $query) : [$query];
                             foreach ($chunks as $chunk) {
-                                $queryParam .= sprintf(" (%s.%s LIKE '%%%s%%') OR ", "t" . $i, $value, $chunk);
+                                $queryParam .= sprintf(" (%s.%s LIKE '%%%s%%') OR ", "t" . $i, $value, $this->escapeQueryParam($chunk));
                             }
                             $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
                         }
@@ -213,10 +213,11 @@ trait ResourceCRUDTrait
                             case '<=':
                             case '>=':
                             case '=':
+                            case 'LIKE':
                                 if (strpos($fields[$key], 'datetime') !== false) {
-                                    $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST('%s' AS DATE))", $searchField, $value[1], $value[2]);
+                                    $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST('%s' AS DATE))", $searchField, $value[1], $this->escapeQueryParam($value[2]));
                                 } else {
-                                    $queryParam .= sprintf(" AND %s %s '%s' ", $searchField, $value[1], $value[2]);
+                                    $queryParam .= sprintf(" AND %s %s '%s' ", $searchField, $value[1], $this->escapeQueryParam($value[2]));
                                 }
                                 break;
                             default:
@@ -232,7 +233,7 @@ trait ResourceCRUDTrait
                             $value = implode("','", $value);
                             $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
                         } else {
-                            $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $value);
+                            $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $this->escapeQueryParam($value));
                         }
                     }
                 }
@@ -993,5 +994,18 @@ trait ResourceCRUDTrait
     protected function getParentResourceKey()
     {
         return null;
+    }
+
+    protected function escapeQueryParam($input)
+    {
+        // Replace single quotes and double quotes
+        $input = str_replace("'", "''", $input);
+        $input = str_replace('"', '""', $input);
+
+        // Optionally escape other characters like semicolons if necessary
+        $input = str_replace(";", "\\;", $input);
+        $input = str_replace(",", "\\,", $input);
+
+        return $input;
     }
 }
