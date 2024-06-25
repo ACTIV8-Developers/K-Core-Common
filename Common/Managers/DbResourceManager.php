@@ -635,7 +635,7 @@ class DbResourceManager implements ResourceManagerInterface
         return $queryParam;
     }
 
-    protected function escapeQueryParam($input)
+    public function escapeQueryParam($input)
     {
         // Replace single quotes and double quotes
         $input = str_replace("'", "''", $input);
