@@ -625,7 +625,7 @@ class DbResourceManager implements ResourceManagerInterface
                             $value = implode("','", $value);
                             $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
                         } else {
-                            $queryParam .= sprintf(" AND %s = %s ", $searchField, $this->escapeQueryParam($value));
+                            $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $this->escapeQueryParam($value));
                         }
                     }
                 }
