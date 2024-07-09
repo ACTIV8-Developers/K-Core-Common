@@ -623,7 +623,7 @@ class DbResourceManager implements ResourceManagerInterface
                         if (str_contains($value, ',')) {
                             $value = explode(',', $value);
                             $value = implode("','", $value);
-                            $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $value);
+                            $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $this->escapeQueryParam($value));
                         } else {
                             $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $this->escapeQueryParam($value));
                         }
