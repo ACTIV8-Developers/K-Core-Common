@@ -228,7 +228,7 @@ trait ResourceCRUDTrait
                         if (!empty($additionalFields[$key])) {
                             $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $keys, $tableAliasReplaceMap, true);
                         }
-                        if (str_contains($value, ',')) {
+                        if (str_contains($value, ',') && $this->endsWithID($searchField)) {
                             $value = explode(',', $value);
                             $value = implode("','", $value);
                             $queryParam .= sprintf(" AND %s IN (%s) ", $searchField, $this->escapeQueryParam($value));
@@ -996,6 +996,21 @@ trait ResourceCRUDTrait
         return null;
     }
 
+    public function endsWithID($string): bool {
+        // Get the length of the string
+        $length = strlen($string);
+        // Get the length of the substring "ID"
+        $substring = "ID";
+        $substring_length = strlen($substring);
+
+        // Check if the end of the string matches "ID"
+        if ($substring_length > $length) {
+            return false;
+        }
+
+        return substr($string, -$substring_length) === $substring;
+    }
+
     protected function escapeQueryParam($input)
     {
         // Replace single quotes and double quotes
@@ -1004,8 +1019,6 @@ trait ResourceCRUDTrait
 
         // Optionally escape other characters like semicolons if necessary
         $input = str_replace(";", "\\;", $input);
-        $input = str_replace(",", "\\,", $input);
-
-        return $input;
+        return str_replace(",", "\\,", $input);
     }
 }

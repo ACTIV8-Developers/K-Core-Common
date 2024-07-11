@@ -620,7 +620,7 @@ class DbResourceManager implements ResourceManagerInterface
                         if (!isset($fields[$key]) && !empty($additionalFields[$key])) {
                             $searchField = $this->fillPlaceholderTables($additionalFields[$key], $model, $model->getTableKeys(), $tableAliasReplaceMap);
                         }
-                        if (str_contains($value, ',')) {
+                        if (str_contains($value, ',') && $this->endsWithID($searchField)) {
                             $value = explode(',', $value);
                             $value = implode("','", $value);
                             $queryParam .= sprintf(" AND %s IN (%s) ", $searchField, $this->escapeQueryParam($value));
@@ -635,7 +635,22 @@ class DbResourceManager implements ResourceManagerInterface
         return $queryParam;
     }
 
-    public function escapeQueryParam($input)
+    public function endsWithID($string): bool {
+        // Get the length of the string
+        $length = strlen($string);
+        // Get the length of the substring "ID"
+        $substring = "ID";
+        $substring_length = strlen($substring);
+
+        // Check if the end of the string matches "ID"
+        if ($substring_length > $length) {
+            return false;
+        }
+
+        return substr($string, -$substring_length) === $substring;
+    }
+
+    public function escapeQueryParam($input): array|string
     {
         // Replace single quotes and double quotes
         $input = str_replace("'", "''", $input);
@@ -643,8 +658,6 @@ class DbResourceManager implements ResourceManagerInterface
 
         // Optionally escape other characters like semicolons if necessary
         $input = str_replace(";", "\\;", $input);
-        $input = str_replace(",", "\\,", $input);
-
-        return $input;
+        return str_replace(",", "\\,", $input);
     }
 }
