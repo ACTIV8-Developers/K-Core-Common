@@ -18,6 +18,7 @@ use Psr\Container\ContainerInterface;
  * @method orderBy(string $column)
  * @method start(int $offset)
  * @method limit(int $limit)
+ * @method withNoLock(bool $lock)
  */
 class BaseDAO extends Model
 {
@@ -79,6 +80,11 @@ class BaseDAO extends Model
     protected $join = null;
 
     /**
+     * @var bool
+     */
+    protected bool $withNoLock = false;
+
+    /**
      * @var ?DatabaseInterface
      */
     public ?DatabaseInterface $database = null;
@@ -117,7 +123,7 @@ class BaseDAO extends Model
     {
         $select = is_array($this->select) ? implode(',', $this->select) : $this->select;
 
-        $sql = sprintf('SELECT %s FROM %s', $select, $this->table);
+        $sql = sprintf('SELECT %s FROM %s %s', $select, $this->table, !empty($withNoLock) ? "WITH (NOLOCK)" : "");
 
         // Join
         if ($this->join !== null) {
@@ -167,7 +173,7 @@ class BaseDAO extends Model
     {
         $select = is_array($this->select) ? implode(',', $this->select) : $this->select;
 
-        $sql = sprintf('SELECT %s FROM %s', $select, $this->table);
+        $sql = sprintf('SELECT %s FROM %s %s', $select, $this->table, !empty($withNoLock) ? "WITH (NOLOCK)" : "");
 
         // Join
         if ($this->join !== null) {
