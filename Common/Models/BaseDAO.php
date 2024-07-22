@@ -123,7 +123,7 @@ class BaseDAO extends Model
     {
         $select = is_array($this->select) ? implode(',', $this->select) : $this->select;
 
-        $sql = sprintf('SELECT %s FROM %s %s', $select, $this->table, !empty($withNoLock) ? "WITH (NOLOCK)" : "");
+        $sql = sprintf('SELECT %s FROM %s %s', $select, $this->table, !empty($this->withNoLock) ? "WITH (NOLOCK)" : "");
 
         // Join
         if ($this->join !== null) {
@@ -173,7 +173,7 @@ class BaseDAO extends Model
     {
         $select = is_array($this->select) ? implode(',', $this->select) : $this->select;
 
-        $sql = sprintf('SELECT %s FROM %s %s', $select, $this->table, !empty($withNoLock) ? "WITH (NOLOCK)" : "");
+        $sql = sprintf('SELECT %s FROM %s %s', $select, $this->table, !empty($this->withNoLock) ? "WITH (NOLOCK)" : "");
 
         // Join
         if ($this->join !== null) {
