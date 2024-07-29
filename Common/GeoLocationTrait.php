@@ -227,7 +227,7 @@ trait GeoLocationTrait
         $Timestamp = $defaults['Timestamp'];
 
         $key = getenv('GOOGLE_MAPS_GEO_KEY');
-        $url = sprintf("https://maps.googleapis.com/maps/api/timezone/json?location==%s,%s&key=%s&timestamp=%s", $Latitude, $Longitude, $key, $Timestamp);
+        $url = sprintf("https://maps.googleapis.com/maps/api/timezone/json?location=%s,%s&key=%s&timestamp=%s", $Latitude, $Longitude, $key, $Timestamp);
         return json_decode(file_get_contents($url), true);
     }
 }
