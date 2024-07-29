@@ -66,7 +66,9 @@ trait GeoLocationTrait
         $address = '';
         $CityName = '';
         $StateID = null;
+        $State = null;
         $CountryID = null;
+        $Country = null;
         $PostalCode = '';
         foreach ($data['results'][0]['address_components'] as $key => $value) {
             if (in_array("street_number", $value['types'])) {
@@ -80,15 +82,17 @@ trait GeoLocationTrait
             }
             if (in_array("administrative_area_level_1", $value['types'])) {
                 $StateID = $this->getDaoForObject(TblState::class)
-                    ->select('StateID')
+                    ->select('StateID, StateName')
                     ->where(sprintf("StateAbbreviation='%s'", $value['short_name']))
                     ->getOne();
+                $State = $StateID ? $StateID['StateName'] : null;
             }
             if (in_array("country", $value['types'])) {
                 $CountryID = $this->getDaoForObject(TblCountry::class)
                     ->select('CountryID')
                     ->where(sprintf("Abbreviation='%s'", $value['short_name']))
                     ->getOne();
+                $Country = $CountryID ? $CountryID['CountryID'] : null;
             }
             if (in_array("postal_code", $value['types'])) {
                 $PostalCode = isset($value['long_name']) ? $value['long_name'] : "";
@@ -97,9 +101,12 @@ trait GeoLocationTrait
         return [
             'AddressName' => $addressNumber . $address,
             'CountryID' => $CountryID ? $CountryID['CountryID'] : null,
+            'Country' => $Country ?? null,
             'PostalCode' => $PostalCode,
             'StateID' => $StateID ? $StateID['StateID'] : null,
-            'CityName' => $CityName
+            'State' => $State ??  null,
+            'CityName' => $CityName,
+            'FormatedAddress' => isset($data['results'][0]) ? $data['results'][0]['formatted_address'] : null,
         ];
     }
 
