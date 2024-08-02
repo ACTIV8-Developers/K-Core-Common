@@ -605,6 +605,7 @@ class DbResourceManager implements ResourceManagerInterface
                             case '<=':
                             case '>=':
                             case '=':
+                            case '<>':
                             case 'LIKE':
                                 if (str_contains($fields[$key] ?? $additionalFields[$key], 'datetime')) {
                                     $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST('%s' AS DATE))", $searchField, $value[1], $this->escapeQueryParam($value[2]));

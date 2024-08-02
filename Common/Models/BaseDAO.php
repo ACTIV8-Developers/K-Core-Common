@@ -236,9 +236,10 @@ class BaseDAO extends Model
      */
     public function countAll(): int
     {
-        return $this->db()->select(sprintf('SELECT COUNT(%s) as cnt FROM %s',
+        return $this->db()->select(sprintf('SELECT COUNT(%s) as cnt FROM %s %s',
             $this->pk,
-            $this->table
+            $this->table,
+            !empty($this->withNoLock) ? "WITH (NOLOCK)" : ""
         ))[0]['cnt'];
     }
 
@@ -247,9 +248,10 @@ class BaseDAO extends Model
      */
     public function count(): int
     {
-        $sql = sprintf('SELECT COUNT(%s) as cnt FROM %s',
+        $sql = sprintf('SELECT COUNT(%s) as cnt FROM %s %s',
             $this->table . "." . $this->pk,
-            $this->table
+            $this->table,
+            !empty($this->withNoLock) ? "WITH (NOLOCK)" : ""
         );
 
         // Join

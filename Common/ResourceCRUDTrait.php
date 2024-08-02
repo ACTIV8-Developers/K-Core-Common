@@ -206,13 +206,13 @@ trait ResourceCRUDTrait
                         } else {
                             throw new \Exception("UNSUPPORTED_COMPARE_FIELD");
                         }
-
                         switch ($value[1]) {
                             case '<':
                             case '>':
                             case '<=':
                             case '>=':
                             case '=':
+                            case '<>':
                             case 'LIKE':
                                 if (strpos($fields[$key], 'datetime') !== false) {
                                     $queryParam .= sprintf(" AND (CAST(%s AS DATE) %s CAST('%s' AS DATE))", $searchField, $value[1], $this->escapeQueryParam($value[2]));
