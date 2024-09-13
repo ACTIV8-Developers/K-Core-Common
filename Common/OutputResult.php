@@ -34,9 +34,9 @@ class OutputResult
         ]);
     }
 
-    public static function successOrFailWithID(int $id): OutputResult
+    public static function successOrFailWithID(int $id, $FailMessage = null): OutputResult
     {
-        return new OutputResult(!!$id, !!$id ? 'OK' : 'OPERATION_FAILED', [
+        return new OutputResult(!!$id, !!$id ? 'OK' : $FailMessage ?? 'OPERATION_FAILED', [
             'id' => $id
         ]);
     }
