@@ -37,6 +37,24 @@ trait DAOTrait
         return $queryParam;
     }
 
+    public function appendExcludeQueryForFields($queryParam, $fields, $query): string
+    {
+        if (!empty($query)) {
+            $queryParam .= empty($queryParam) ? " (" : " AND (";
+            $chunks = explode(' ', $query);
+            foreach ($chunks as $chunk) {
+                $likeQuery = "";
+                foreach ($fields as $f) {
+                    $likeQuery .= sprintf(" %s NOT LIKE '%%%s%%' AND ", $f, $this->escapeQueryParam($chunk));
+                }
+                $likeQuery = substr($likeQuery, 0, strlen($likeQuery) - 3);
+                $queryParam .= sprintf("(%s) AND ", $likeQuery);
+            }
+            return substr($queryParam, 0, strlen($queryParam) - 4) . ")";
+        }
+        return $queryParam;
+    }
+
     public function toFrontDateTime($date, $format = "m/d/Y H:i"): ?string
     {
         if ($date) {
