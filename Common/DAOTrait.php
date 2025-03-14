@@ -47,10 +47,10 @@ trait DAOTrait
                 foreach ($fields as $f) {
                     $likeQuery .= sprintf(" %s NOT LIKE '%%%s%%' AND ", $f, $this->escapeQueryParam($chunk));
                 }
-                $likeQuery = substr($likeQuery, 0, strlen($likeQuery) - 3);
+                $likeQuery = substr($likeQuery, 0, strlen($likeQuery) - 4);
                 $queryParam .= sprintf("(%s) AND ", $likeQuery);
             }
-            return substr($queryParam, 0, strlen($queryParam) - 4) . ")";
+            return substr($queryParam, 0, strlen($queryParam) - 5) . ")";
         }
         return $queryParam;
     }
