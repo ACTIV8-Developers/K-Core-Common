@@ -1011,14 +1011,13 @@ trait ResourceCRUDTrait
         return substr($string, -$substring_length) === $substring;
     }
 
-    protected function escapeQueryParam($input)
+    protected function escapeQueryParam($input): string
     {
         // Replace single quotes and double quotes
         $input = str_replace("'", "''", $input);
         $input = str_replace('"', '""', $input);
 
         // Optionally escape other characters like semicolons if necessary
-        $input = str_replace(";", "\\;", $input);
-        return str_replace(",", "\\,", $input);
+        return str_replace(";", "\\;", $input);
     }
 }

@@ -651,14 +651,13 @@ class DbResourceManager implements ResourceManagerInterface
         return substr($string, -$substring_length) === $substring;
     }
 
-    public function escapeQueryParam($input): array|string
+    protected function escapeQueryParam($input): string
     {
         // Replace single quotes and double quotes
         $input = str_replace("'", "''", $input);
         $input = str_replace('"', '""', $input);
 
         // Optionally escape other characters like semicolons if necessary
-        $input = str_replace(";", "\\;", $input);
-        return str_replace(",", "\\,", $input);
+        return str_replace(";", "\\;", $input);
     }
 }
