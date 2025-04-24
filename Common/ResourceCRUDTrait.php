@@ -146,7 +146,8 @@ trait ResourceCRUDTrait
                 foreach ($searchableCol as $value) {
                     $chunks = !!$NotExact ? explode(' ', $query) : [$query];
                     foreach ($chunks as $chunk) {
-                        $queryParam .= sprintf("(%s.%s LIKE '%%%s%%') OR ", $tableName, $value, $this->escapeQueryParam($chunk));
+                        $tName = strpos($value, ".") === false ? $tableName . "." : "";
+                        $queryParam .= sprintf("(%s%s LIKE '%%%s%%') OR ", $tName, $value, $this->escapeQueryParam($chunk));
                     }
                     $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
                 }
