@@ -119,7 +119,7 @@ class DbResourceManager implements ResourceManagerInterface
 
         $sql = (new BaseDAO($model))
             ->select($select)
-            ->withLock($noLock)
+            ->withNoLock($noLock)
             ->join($joins);
         $sql->setContainer($this->container);
 
