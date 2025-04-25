@@ -68,7 +68,7 @@ class DbResourceManager implements ResourceManagerInterface
             $joinTableName = $joinModel->getTableName();
             $joinTablePK = $joinModel->getPrimaryKey();
 
-            return sprintf("LEFT JOIN %s as t%d ".($noLock ? "" : "")."ON t%d.%s=%s.%s", $joinTableName, $i + 1, $i + 1, $joinTablePK, $tableName, $k);
+            return sprintf("LEFT JOIN %s as t%d ".($noLock ? "WITH (NOLOCK)" : "")." ON t%d.%s=%s.%s", $joinTableName, $i + 1, $i + 1, $joinTablePK, $tableName, $k);
         });
 
         $tableAliasReplaceMap = [];
