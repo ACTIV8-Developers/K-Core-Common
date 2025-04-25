@@ -30,7 +30,7 @@ class DbResourceManager implements ResourceManagerInterface
         $this->container = $container;
     }
 
-    public function readListBy(BaseObject $model, array $input, array $where = []): array
+    public function readListBy(BaseObject $model, array $input, array $where = [], $noLock = false): array
     {
         /** Read user input from Request object.
          * =============================================================================== */
@@ -63,12 +63,12 @@ class DbResourceManager implements ResourceManagerInterface
 
         /** Gather information about model.
          * =============================================================================== */
-        $joins = $this->map($keys, function ($key, $i, $k) use ($tableName) {
+        $joins = $this->map($keys, function ($key, $i, $k) use ($tableName, $noLock) {
             $joinModel = new $key();
             $joinTableName = $joinModel->getTableName();
             $joinTablePK = $joinModel->getPrimaryKey();
 
-            return sprintf("LEFT JOIN %s as t%d ON t%d.%s=%s.%s", $joinTableName, $i + 1, $i + 1, $joinTablePK, $tableName, $k);
+            return sprintf("LEFT JOIN %s as t%d ".($noLock ? "" : "")."ON t%d.%s=%s.%s", $joinTableName, $i + 1, $i + 1, $joinTablePK, $tableName, $k);
         });
 
         $tableAliasReplaceMap = [];
@@ -119,6 +119,7 @@ class DbResourceManager implements ResourceManagerInterface
 
         $sql = (new BaseDAO($model))
             ->select($select)
+            ->withLock($noLock)
             ->join($joins);
         $sql->setContainer($this->container);
 
