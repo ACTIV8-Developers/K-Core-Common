@@ -36,7 +36,8 @@ trait ResourceCRUDTrait
                                                   $ExcludeIDs = null,
                                                   $searchFields = null,
                                                   $NotExact = null,
-                                                  $customSelect = null)
+                                                  $customSelect = null,
+                                                  $withNoLock = false)
     {
         /** Read user input from Request object.
          * =============================================================================== */
@@ -274,6 +275,8 @@ trait ResourceCRUDTrait
             $sql->order($sort);
         }
 
+        $sql->withNoLock($withNoLock);
+
         /** Add pagination part of the query.
          * =============================================================================== */
         /** Output as EXCEL file
@@ -325,7 +328,8 @@ trait ResourceCRUDTrait
 
                                        bool $output = true, $overrideParentKey = null, $where = null,
                                                $overrideID = null,
-                                               $customSelect = null)
+                                               $customSelect = null,
+                                                $withNoLock = false)
     {
         /** Read user input from Request object.
          * =============================================================================== */
@@ -365,7 +369,8 @@ trait ResourceCRUDTrait
             $ExcludeIDs,
             $searchFields,
             $NotExact,
-            $customSelect);
+            $customSelect,
+            $withNoLock);
     }
 
     public function handleSingleResourceRead(BaseDAO $resourceDao, $output = true, $overrideParentKey = null)
