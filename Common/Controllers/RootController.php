@@ -14,6 +14,9 @@ use DateTime;
 use PURL;
 use Ramsey\Uuid\Uuid;
 
+const GET_QUERY_LIMIT = 1024;
+const GET_QUERY_SEARCH_LIMIT = 4096;
+
 abstract class RootController extends Controller
 {
     use DAOTrait;
@@ -171,7 +174,9 @@ abstract class RootController extends Controller
                 return null;
             }
             if ($filter !== null) {
-                return $this->filterVar($this->request->get->get($key), $filter, $option);
+                $val = $this->request->get->get($key);
+                $val = substr($val, 0, $key != "searchFields" ? GET_QUERY_LIMIT : GET_QUERY_SEARCH_LIMIT);
+                return $this->filterVar($val, $filter, $option);
             } else {
                 return $this->request->get->get($key);
             }
