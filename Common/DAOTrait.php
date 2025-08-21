@@ -37,6 +37,21 @@ trait DAOTrait
         return $queryParam;
     }
 
+    public function appendQueryForFieldsNoChunking($queryParam, $fields, $query): string
+    {
+        if (!empty($query)) {
+            $queryParam .= empty($queryParam) ? " (" : " AND (";
+            $likeQuery = "";
+            foreach ($fields as $f) {
+                $likeQuery .= sprintf(" %s LIKE '%%%s%%' OR ", $f, $this->escapeQueryParam($query));
+            }
+            $likeQuery = substr($likeQuery, 0, strlen($likeQuery) - 3);
+            $queryParam .= sprintf("(%s) AND ", $likeQuery);
+            return substr($queryParam, 0, strlen($queryParam) - 4) . ")";
+        }
+        return $queryParam;
+    }
+
     public function appendExcludeQueryForFields($queryParam, $fields, $query): string
     {
         if (!empty($query)) {
