@@ -233,7 +233,7 @@ trait ResourceCRUDTrait
                         if (str_contains($value, ',') && $this->endsWithID($searchField)) {
                             $value = explode(',', $value);
                             $value = implode("','", $value);
-                            $queryParam .= sprintf(" AND %s IN (%s) ", $searchField, $this->escapeQueryParam($value));
+                            $queryParam .= sprintf(" AND %s IN ('%s') ", $searchField, $this->escapeQueryParam($value));
                         } else {
                             $queryParam .= sprintf(" AND %s = '%s' ", $searchField, $this->escapeQueryParam($value));
                         }
