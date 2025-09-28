@@ -126,8 +126,10 @@ class DbResourceManager implements ResourceManagerInterface
         /** Add to WHERE clause for tables that are part of the multi tenant system (have CompanyID in a field list)
          * and user is a part of the company.
          * =============================================================================== */
+        $typedParams = [];
         if (isset($fields["CompanyID"]) && !empty($this->IAM->getCompanyID())) {
-            $queryParam = sprintf("%s.CompanyID=%d", $tableName, $this->IAM->getCompanyID());
+            $queryParam = sprintf("%s.CompanyID=:CompanyID", $tableName);
+            $typedParams['CompanyID'] = $this->IAM->getCompanyID();
         } else {
             $queryParam = "1=1";
         }
@@ -200,6 +202,10 @@ class DbResourceManager implements ResourceManagerInterface
 
         if (!empty($queryParam)) {
             $sql->where($queryParam);
+        }
+
+        if (!empty($typedParams)) {
+            $sql->typedParams($typedParams);
         }
 
         /** Add SORT part of the query.
@@ -318,8 +324,10 @@ class DbResourceManager implements ResourceManagerInterface
         /** Add to WHERE clause for tables that are part of the multi tenant system (have CompanyID in a field list)
          * and user is a part of the company.
          * =============================================================================== */
+        $typedParams = [];
         if (isset($fields["CompanyID"]) && !empty($this->IAM->getCompanyID())) {
-            $queryParam = sprintf("%s.CompanyID=%d", $tableName, $this->IAM->getCompanyID());
+            $queryParam = sprintf("%s.CompanyID=:CompanyID", $tableName);
+            $typedParams['CompanyID'] = $this->IAM->getCompanyID();
         } else {
             $queryParam = "1=1";
         }
@@ -330,7 +338,7 @@ class DbResourceManager implements ResourceManagerInterface
 
         $sql = "SELECT " . $select . " FROM " . $model->getTableName() . (empty($joins) ? '' : " LEFT JOIN " . $joins) . sprintf(" WHERE %s", $queryParam);
 
-        $result = $this->db->select($sql);
+        $result = $this->db->select($sql, $typedParams);
 
         if (isset($result[0])) {
             $result = $result[0];

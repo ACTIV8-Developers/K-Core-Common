@@ -14,6 +14,7 @@ use Psr\Container\ContainerInterface;
  * @property DatabaseInterface $db
  * @method select(string $select)
  * @method where(string|array $where)
+ * @method typedParams(array $typedParams)
  * @method order(string $ascDesc)
  * @method orderBy(string $column)
  * @method start(int $offset)
@@ -56,6 +57,11 @@ class BaseDAO extends Model
      * @var array|string
      */
     protected $where = null;
+
+    /**
+     * @var array|null
+     */
+    protected $typedParams = null;
 
     /**
      * @var ?int
@@ -145,6 +151,7 @@ class BaseDAO extends Model
                 $values = $this->where;
             } else {
                 $sql .= ' WHERE ' . $this->where;
+                $values = $this->typedParams ?? [];
             }
         }
 
@@ -234,18 +241,6 @@ class BaseDAO extends Model
     /**
      * @return int
      */
-    public function countAll(): int
-    {
-        return $this->db()->select(sprintf('SELECT COUNT(%s) as cnt FROM %s %s',
-            $this->pk,
-            $this->table,
-            !empty($this->withNoLock) ? "WITH (NOLOCK)" : ""
-        ))[0]['cnt'];
-    }
-
-    /**
-     * @return int
-     */
     public function count(): int
     {
         $sql = sprintf('SELECT COUNT(%s) as cnt FROM %s %s',
@@ -274,6 +269,7 @@ class BaseDAO extends Model
                 $values = $this->where;
             } else {
                 $sql .= ' WHERE ' . $this->where;
+                $values = $this->typedParams ?? [];
             }
         }
 
