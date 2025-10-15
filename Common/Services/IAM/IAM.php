@@ -4,6 +4,7 @@ namespace Common\Services\IAM;
 
 use Common\Services\IAM\Interfaces\IAMInterface;
 use Core\Container\ContainerAware;
+use OTPHP\TOTP;
 
 /**
  * Class IAM
@@ -57,6 +58,36 @@ class IAM extends ContainerAware implements IAMInterface
             $value = $this->user['Contact']['Email'] ?? null;
         } catch (\Exception $e) {}
         return $value;
+    }
+
+    public function is2FAOn(): bool
+    {
+        $value = null;
+        try {
+            $value = $this->user['Contact']['UseTwoFactorAuth'] ?? null;
+        } catch (\Exception $e) {}
+        return !empty($value);
+    }
+
+    public function is2FAAuthOn(): bool
+    {
+        $value = null;
+        try {
+            $value = $this->user['Contact']['TwoFactorTOPTSecret'] ?? null;
+        } catch (\Exception $e) {}
+        return !empty($value);
+    }
+
+    public function verify2FAAuthCode(string $code): bool
+    {
+        $secret = null;
+        try {
+            $secret = $this->user['Contact']['TwoFactorTOPTSecret'] ?? null;
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        return TOTP::createFromSecret($secret)->verify($code);
     }
 
     /**

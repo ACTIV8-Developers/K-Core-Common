@@ -49,4 +49,8 @@ interface IAMInterface
      * @return bool
      */
     public function permissionCheck(int $userLevel, int $permission): bool;
+
+    public function is2FAOn(): bool;
+
+    public function is2FAAuthOn(): bool;
 }

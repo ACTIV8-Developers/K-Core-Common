@@ -31,7 +31,8 @@ class OAuthPDO extends Pdo
         // the default behavior is to use "username" as the user_id
         $this->userCache = array_merge(array(
             'user_id' => $username,
-            'id' => $id
+            'id' => $id,
+            'allowed_ips' => $userInfo['allowed_ips'] ?? "",
         ), $userInfo);
 
         return $this->userCache;
