@@ -2,6 +2,10 @@
 
 namespace Common;
 
+use App\Models\TblCompany;
+use App\Models\TblDivision;
+use App\Models\TblOffice;
+use App\Models\TblState;
 use Carbon\Carbon;
 use Common\Models\BaseDAO;
 
@@ -108,5 +112,49 @@ trait DAOTrait
 
         // Optionally escape other characters like semicolons if necessary
         return str_replace(";", "\\;", $input);
+    }
+
+    public function getBilledByDataForOffice(int $OfficeID, ?int $CompanyID = null): array
+    {
+        // Billed by
+        $result = $this->ResourceManager->findByID(new TblCompany(), $CompanyID ?? $this->IAM->getCompanyID());
+
+        $Office = $this->ResourceManager->findByID(new TblOffice(), $OfficeID);
+        $Division = !empty($Office) ? $this->ResourceManager->findByID(new TblDivision(), $Office['DivisionID']) : [];
+
+        if (!empty($Office) && $Office['AccountingDocumentName'] == 2) {
+            $result['CompanyName'] = $Division['DivisionName'];
+        }
+        if (!empty($Office) && $Office['AccountingDocumentAddress'] == 2) {
+            $result['AddressName'] = $Division['AddressName'];
+            $result['AddressName2'] = $Division['AddressName2'];
+            $result['CityName'] = $Division['CityName'];
+            $result['State'] = $Division['State'];
+            $result['StateID'] = $Division['StateID'];
+            $result['Country'] = $Division['Country'];
+            $result['CountryID'] = $Division['CountryID'];
+            $result['PostalCode'] = $Division['PostalCode'];
+            $result['AreaCode'] = $Division['AreaCode'];
+            $result['PhoneNumber'] = $Division['PhoneNumber'];
+            $result['PhoneExtension'] = $Division['PhoneExtension'];
+            $result['MCNumber'] = $Division['MC'] ?? "";
+            $result['FederalID'] = $Division['FederalID'] ?? "";
+        }
+        if (!empty($Office) && $Office['AccountingDocumentLogo'] == 2) {
+            $result['ServerImagePath'] = $this->TemplatesManagerInterface->getDivisionLogoUrl($Office['DivisionID']);
+            $result['ImagePath'] = $this->TemplatesManagerInterface->getDivisionLogoUrl($Office['DivisionID']);
+        } else {
+            $result['ServerImagePath'] = $this->TemplatesManagerInterface->getCompanyLogoUrl($CompanyID);
+            $result['ImagePath'] = $this->TemplatesManagerInterface->getCompanyLogoUrl($CompanyID);
+        }
+
+        $State = $this->ResourceManager->findByID(new TblState(), $result['StateID'] ?? 0);
+
+        if (!empty($State['StateAbbreviation'])) {
+            $result['StateAbbreviation'] = $State['StateAbbreviation'];
+        } else {
+            $result['StateAbbreviation'] = '';
+        }
+        return $result;
     }
 }
