@@ -114,7 +114,7 @@ trait DAOTrait
         return str_replace(";", "\\;", $input);
     }
 
-    public function getBilledByDataForOffice(int $OfficeID, ?int $CompanyID = null): array
+    public function getBilledByDataForOffice(int $OfficeID, ?int $CompanyID = null, $isDispatch = false): array
     {
         // Billed by
         $result = $this->ResourceManager->findByID(new TblCompany(), $CompanyID ?? $this->IAM->getCompanyID());
@@ -122,10 +122,22 @@ trait DAOTrait
         $Office = $this->ResourceManager->findByID(new TblOffice(), $OfficeID);
         $Division = !empty($Office) ? $this->ResourceManager->findByID(new TblDivision(), $Office['DivisionID']) : [];
 
-        if (!empty($Office) && $Office['AccountingDocumentName'] == 2) {
+        if (!empty($Office) &&
+            (
+                ($Office['AccountingDocumentName'] == 2 && empty($isDispatch))
+                &&
+                ($Office['DispatchDocumentName'] == 2 && !empty($isDispatch))
+            )
+        ) {
             $result['CompanyName'] = $Division['DivisionName'];
         }
-        if (!empty($Office) && $Office['AccountingDocumentAddress'] == 2) {
+        if (!empty($Office) &&
+            (
+                ($Office['AccountingDocumentAddress'] == 2 && empty($isDispatch))
+                &&
+                ($Office['DispatchDocumentAddress'] == 2 && !empty($isDispatch))
+            )
+        ) {
             $result['AddressName'] = $Division['AddressName'];
             $result['AddressName2'] = $Division['AddressName2'];
             $result['CityName'] = $Division['CityName'];
@@ -140,7 +152,13 @@ trait DAOTrait
             $result['MCNumber'] = $Division['MC'] ?? "";
             $result['FederalID'] = $Division['FederalID'] ?? "";
         }
-        if (!empty($Office) && $Office['AccountingDocumentLogo'] == 2) {
+        if (!empty($Office) &&
+            (
+                ($Office['DispatchDocumentLogo'] == 2 && empty($isDispatch))
+                &&
+                ($Office['AccountingDocumentLogo'] == 2 && !empty($isDispatch))
+            )
+        ) {
             $result['ServerImagePath'] = $this->TemplatesManagerInterface->getDivisionLogoUrl($Office['DivisionID']);
             $result['ImagePath'] = $this->TemplatesManagerInterface->getDivisionLogoUrl($Office['DivisionID']);
         } else {
