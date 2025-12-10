@@ -125,7 +125,7 @@ trait DAOTrait
         if (!empty($Office) &&
             (
                 ($Office['AccountingDocumentName'] == 2 && empty($isDispatch))
-                &&
+                ||
                 ($Office['DispatchDocumentName'] == 2 && !empty($isDispatch))
             )
         ) {
@@ -134,7 +134,7 @@ trait DAOTrait
         if (!empty($Office) &&
             (
                 ($Office['AccountingDocumentAddress'] == 2 && empty($isDispatch))
-                &&
+                ||
                 ($Office['DispatchDocumentAddress'] == 2 && !empty($isDispatch))
             )
         ) {
@@ -155,7 +155,7 @@ trait DAOTrait
         if (!empty($Office) &&
             (
                 ($Office['DispatchDocumentLogo'] == 2 && empty($isDispatch))
-                &&
+                ||
                 ($Office['AccountingDocumentLogo'] == 2 && !empty($isDispatch))
             )
         ) {
