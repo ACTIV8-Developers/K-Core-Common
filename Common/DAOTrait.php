@@ -154,9 +154,9 @@ trait DAOTrait
         }
         if (!empty($Office) &&
             (
-                ($Office['DispatchDocumentLogo'] == 2 && empty($isDispatch))
+                ($Office['AccountingDocumentLogo'] == 2 && empty($isDispatch))
                 ||
-                ($Office['AccountingDocumentLogo'] == 2 && !empty($isDispatch))
+                ($Office['DispatchDocumentLogo'] == 2 && !empty($isDispatch))
             )
         ) {
             $result['ServerImagePath'] = $this->TemplatesManagerInterface->getDivisionLogoUrl($Office['DivisionID']);
