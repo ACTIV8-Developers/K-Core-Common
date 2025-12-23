@@ -138,6 +138,11 @@ abstract class BaseObject
         return $this->meta[$key] ?? null;
     }
 
+    public function setMetaByKey($key, $value): void
+    {
+        $this->meta[$key] = $value;
+    }
+
     public function getDescColumn($prefix = null)
     {
         $pref = ($prefix ?? $this->getTableName()) . ".";
