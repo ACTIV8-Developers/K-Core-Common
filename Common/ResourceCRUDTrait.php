@@ -969,10 +969,11 @@ trait ResourceCRUDTrait
     protected function additionalDataProcess($data)
     {
         if (isset($data['AddressName']) && !array_key_exists('CompanyName', $data)) {
-            $lnlt = $this->getLatLonFromAddressLine($data);
-            // TODO revert read from DB
-            $data['Latitude'] = $lnlt['lat'];
-            $data['Longitude'] = $lnlt['lng'];
+            if (empty($data['Latitude']) || empty($data['Longitude'])) {
+                $lnlt = $this->getLatLonFromAddressLine($data);
+                $data['Latitude'] = $lnlt['lat'];
+                $data['Longitude'] = $lnlt['lng'];
+            }
         }
 
         return $data;
