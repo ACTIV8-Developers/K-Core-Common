@@ -45,4 +45,13 @@ class ImagePathManager extends BaseController implements ImagePathManagerInterfa
             return 0;
         }
     }
+
+    public function delete(string $resource, int $id): int
+    {
+        $data = $this->getDaoForObject($resource)->get($id);
+        if (!empty($data['ImagePath'])) {
+            $this->s3->delete($data['ImagePath'], DOCUMENTS_BUCKET);
+        }
+        return $this->getDaoForObject($resource)->update($id, ['ImagePath' => null]);
+    }
 }
