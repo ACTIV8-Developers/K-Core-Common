@@ -38,6 +38,12 @@ interface IAMInterface
     public function getContactEmail(): ?string;
 
     /**
+     * Will return contact object
+     * @return array|null
+     */
+    public function getContact(): ?array;
+
+    /**
      * Checks if user have permission to execute passed action.
      * PERMISSION_DENIED 0
      * PERMISSION_CREATE 2

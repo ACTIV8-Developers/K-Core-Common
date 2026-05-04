@@ -60,6 +60,15 @@ class IAM extends ContainerAware implements IAMInterface
         return $value;
     }
 
+    public function getContact(): ?array
+    {
+        $value = null;
+        try {
+            $value = $this->user['Contact'] ?? null;
+        } catch (\Exception $e) {}
+        return $value;
+    }
+
     public function is2FAOn(): bool
     {
         $value = null;
