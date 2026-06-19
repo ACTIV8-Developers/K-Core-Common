@@ -341,10 +341,10 @@ class BaseDAO extends Model
 
         $values = '';
         foreach ($data as $key => $value) {
-            if ($value !== "") {
-                $values .= ($key . "=" . (is_string($value) ? "'$value'" : $value) . ",");
+            if ($value === null || $value === "") {
+                $values .= ($key . "=null,");
             } else {
-                $values .= ($key . "=" . 'null' . ",");
+                $values .= ($key . "=" . (is_string($value) ? "'$value'" : $value) . ",");
             }
         }
         $values = rtrim($values, ',');
