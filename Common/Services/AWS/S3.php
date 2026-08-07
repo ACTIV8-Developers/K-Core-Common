@@ -45,6 +45,120 @@ class S3
     }
 
     /**
+     * A time-limited URL the caller can PUT bytes to directly.
+     *
+     * Lets a client upload a file without routing it through this API — which
+     * matters because the request budget is 30s and 128M, and because a JSON
+     * transport would have to base64 the payload.
+     *
+     * The key goes through fixKeyBucket(), so the URL is scoped to the caller's
+     * company prefix and cannot be used to write into another tenant's namespace.
+     * It authorises exactly one key: neither the key nor the expiry can be altered
+     * by the holder without invalidating the signature.
+     *
+     * @param int $expiresInSeconds How long the URL stays valid.
+     * @return array{url: string, expires: int} Absolute URL and Unix expiry.
+     */
+    public function presignedPutUrl(string $key, $bucket = "default_bucket", int $expiresInSeconds = 900): array
+    {
+        list ($fixKey, $fixBucket) = $this->fixKeyBucket($key, $bucket);
+
+        $command = $this->client->getCommand('PutObject', [
+            'Bucket' => $fixBucket,
+            'Key'    => $fixKey,
+        ]);
+
+        $expires = time() + $expiresInSeconds;
+        $request = $this->client->createPresignedRequest($command, $expires);
+
+        return [
+            'url'     => (string)$request->getUri(),
+            'expires' => $expires,
+        ];
+    }
+
+    /**
+     * A time-limited URL for downloading an object.
+     *
+     * Counterpart to presignedPutUrl(): lets a caller fetch bytes without them being
+     * routed through this API and without the object being made public. Scoped to the
+     * caller's company prefix by fixKeyBucket(), and the signature covers the key.
+     *
+     * @param string|null $downloadName Filename the browser should save it as.
+     * @return array{url: string, expires: int}
+     */
+    public function presignedGetUrl(
+        string  $key,
+        $bucket = "default_bucket",
+        int     $expiresInSeconds = 900,
+        ?string $downloadName = null
+    ): array {
+        list ($fixKey, $fixBucket) = $this->fixKeyBucket($key, $bucket);
+
+        $params = ['Bucket' => $fixBucket, 'Key' => $fixKey];
+
+        if ($downloadName !== null) {
+            $params['ResponseContentDisposition'] =
+                'attachment; filename="' . str_replace('"', '', $downloadName) . '"';
+        }
+
+        $expires = time() + $expiresInSeconds;
+        $request = $this->client->createPresignedRequest(
+            $this->client->getCommand('GetObject', $params),
+            $expires
+        );
+
+        return [
+            'url'     => (string)$request->getUri(),
+            'expires' => $expires,
+        ];
+    }
+
+    /**
+     * Store raw bytes under a key.
+     *
+     * put() takes a filesystem path; this takes the content directly, for callers that
+     * generated it in memory rather than receiving an upload.
+     */
+    public function putContents(string $key, string $contents, $bucket = "default_bucket")
+    {
+        list ($fixKey, $fixBucket) = $this->fixKeyBucket($key, $bucket);
+
+        return $this->client->putObject([
+            'Bucket' => $fixBucket,
+            'Key'    => $fixKey,
+            'Body'   => $contents,
+        ]);
+    }
+
+    /**
+     * Size and content type of a stored object, or null when it does not exist.
+     *
+     * A HEAD rather than a GET: used to confirm an upload actually landed and to
+     * enforce a size limit without pulling the bytes into memory.
+     *
+     * @return array{size: int, mime: ?string}|null
+     */
+    public function headObject($key, string $bucket = "default_bucket"): ?array
+    {
+        list ($fixKey, $fixBucket) = $this->fixKeyBucket($key, $bucket);
+
+        try {
+            $result = $this->client->headObject([
+                'Bucket' => $fixBucket,
+                'Key'    => $fixKey,
+            ]);
+        } catch (S3Exception) {
+            return null;
+        }
+
+        return [
+            'size' => (int)$result->get('ContentLength'),
+            'mime' => $result->get('ContentType'),
+        ];
+    }
+
+    /**
      * @param $key
      * @param string $bucket
      * @return Result
