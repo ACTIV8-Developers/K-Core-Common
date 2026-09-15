@@ -5,108 +5,96 @@ namespace Common;
 use App\Models\TblCountry;
 use App\Models\TblLocations;
 use App\Models\TblState;
+use App\Services\Geo\GeoLocator;
 use DateTimeZone;
 
 trait GeoLocationTrait
 {
+    /**
+     * Resolves an address to coordinates via the company's configured geo
+     * provider. Returns lat/lng 0 when the address cannot be resolved, which is
+     * the contract callers have always relied on.
+     */
     protected function getLatLonFromAddressLine($defaults = [])
     {
         if (empty($defaults)) {
             $defaults = $this->data();
         }
-        $country = $this->getDaoForObject(TblCountry::class)->where(['CountryID' => $defaults['CountryID']])->getOne();
-        if ($country) {
-            $country = $country['CountryName'];
-        } else {
-            $country = "";
-        }
+
+        $country = $this->getDaoForObject(TblCountry::class)
+            ->where(['CountryID' => $defaults['CountryID'] ?? null])
+            ->getOne();
 
         $state = null;
         if (!empty($defaults['StateID'])) {
-            $state = $this->getDaoForObject(TblState::class)->where(['StateID' => $defaults['StateID']])->getOne();
-        }
-        if ($state) {
-            $state = $state['State'];
-        } else {
-            $state = "";
+            $state = $this->getDaoForObject(TblState::class)
+                ->where(['StateID' => $defaults['StateID']])
+                ->getOne();
         }
 
-        $Postal = $defaults['PostalCode'];
-        if (($country === "USA") || ($country === "Canada")) {
-            $Postal .= " " . $state;
-        }
-
-        $addr = $defaults['AddressName'];
-
-        $addr = $addr . "," . $defaults['CityName'] . "," . $Postal . "," . $country;
-
-        $key = getenv('GOOGLE_MAPS_GEO_KEY');
-        $url = sprintf("https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s", rawurlencode($addr), $key);
-        $data = json_decode(file_get_contents($url), true);
-
-        return $data['results'][0]['geometry']['location'] ?? [
-            'lat' => 0,
-            'lng' => 0
-        ];
+        return GeoLocator::service()->latLonFromAddress([
+            'AddressName' => $defaults['AddressName'] ?? '',
+            'CityName' => $defaults['CityName'] ?? '',
+            'PostalCode' => $defaults['PostalCode'] ?? '',
+            'State' => $state['State'] ?? '',
+            'StateAbbreviation' => $state['StateAbbreviation'] ?? '',
+            'Country' => $country['CountryName'] ?? '',
+        ]);
     }
 
+    /**
+     * Reverse geocodes to the address shape callers expect, resolving the
+     * provider's state/country abbreviations to Accur8 IDs.
+     */
     protected function getAddressFromLatLon($defaults = []): array
     {
         if (empty($defaults)) {
             $defaults = $this->data();
         }
 
-        $Latitude = $defaults['Latitude'];
-        $Longitude = $defaults['Longitude'];
+        $resolved = GeoLocator::service()->addressFromLatLon(
+            (float)($defaults['Latitude'] ?? 0),
+            (float)($defaults['Longitude'] ?? 0)
+        );
 
-        $key = getenv('GOOGLE_MAPS_GEO_KEY');
-        $url = sprintf("https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=%s", $Latitude, $Longitude, $key);
-        $data = json_decode(file_get_contents($url), true);
-        $addressNumber = '';
-        $address = '';
-        $CityName = '';
-        $StateID = null;
-        $State = null;
-        $CountryID = null;
-        $Country = null;
-        $PostalCode = '';
-        foreach ($data['results'][0]['address_components'] as $key => $value) {
-            if (in_array("street_number", $value['types'])) {
-                $addressNumber = isset($value['long_name']) ? $value['long_name'] . " " : '';
-            }
-            if (in_array("route", $value['types'])) {
-                $address = isset($value['long_name']) ? $value['long_name'] : "";
-            }
-            if (in_array("locality", $value['types'])) {
-                $CityName = isset($value['long_name']) ? $value['long_name'] : "";
-            }
-            if (in_array("administrative_area_level_1", $value['types'])) {
-                $StateID = $this->getDaoForObject(TblState::class)
-                    ->select('StateID, StateName')
-                    ->where(sprintf("StateAbbreviation='%s'", $value['short_name']))
-                    ->getOne();
-                $State = $StateID ? $StateID['StateName'] : null;
-            }
-            if (in_array("country", $value['types'])) {
-                $CountryID = $this->getDaoForObject(TblCountry::class)
-                    ->select('CountryID')
-                    ->where(sprintf("Abbreviation='%s'", $value['short_name']))
-                    ->getOne();
-                $Country = $CountryID ? $CountryID['CountryID'] : null;
-            }
-            if (in_array("postal_code", $value['types'])) {
-                $PostalCode = isset($value['long_name']) ? $value['long_name'] : "";
-            }
+        if (empty($resolved)) {
+            return [
+                'AddressName' => '',
+                'CountryID' => null,
+                'Country' => null,
+                'PostalCode' => '',
+                'StateID' => null,
+                'State' => null,
+                'CityName' => '',
+                'FormatedAddress' => null,
+            ];
         }
+
+        $state = null;
+        if (!empty($resolved['StateAbbreviation'])) {
+            $state = $this->getDaoForObject(TblState::class)
+                ->select('StateID, StateName')
+                ->where(sprintf("StateAbbreviation='%s'", $resolved['StateAbbreviation']))
+                ->getOne();
+        }
+
+        $country = null;
+        if (!empty($resolved['CountryAbbreviation'])) {
+            $country = $this->getDaoForObject(TblCountry::class)
+                ->select('CountryID')
+                ->where(sprintf("Abbreviation='%s'", $resolved['CountryAbbreviation']))
+                ->getOne();
+        }
+
         return [
-            'AddressName' => $addressNumber . $address,
-            'CountryID' => $CountryID ? $CountryID['CountryID'] : null,
-            'Country' => $Country ?? null,
-            'PostalCode' => $PostalCode,
-            'StateID' => $StateID ? $StateID['StateID'] : null,
-            'State' => $State ??  null,
-            'CityName' => $CityName,
-            'FormatedAddress' => isset($data['results'][0]) ? $data['results'][0]['formatted_address'] : null,
+            'AddressName' => $resolved['AddressName'],
+            'CountryID' => $country['CountryID'] ?? null,
+            'Country' => $country['CountryID'] ?? null,
+            'PostalCode' => $resolved['PostalCode'],
+            'StateID' => $state['StateID'] ?? null,
+            'State' => $state['StateName'] ?? null,
+            'CityName' => $resolved['CityName'],
+            'FormatedAddress' => $resolved['FormatedAddress'] ?: null,
         ];
     }
 
@@ -216,18 +204,20 @@ trait GeoLocationTrait
         return $earthRadius * $c;
     }
 
+    /**
+     * Google-shaped timezone payload. The key casing (timeZoneId) is load-bearing
+     * — the frontend reads it directly.
+     */
     protected function getTimeZoneFromLatLon($defaults = []): array
     {
         if (empty($defaults)) {
             $defaults = $this->data();
         }
 
-        $Latitude = $defaults['Latitude'];
-        $Longitude = $defaults['Longitude'];
-        $Timestamp = $defaults['Timestamp'];
-
-        $key = getenv('GOOGLE_MAPS_GEO_KEY');
-        $url = sprintf("https://maps.googleapis.com/maps/api/timezone/json?location=%s,%s&key=%s&timestamp=%s", $Latitude, $Longitude, $key, $Timestamp);
-        return json_decode(file_get_contents($url), true);
+        return GeoLocator::service()->timeZoneFromLatLon(
+            (float)($defaults['Latitude'] ?? 0),
+            (float)($defaults['Longitude'] ?? 0),
+            $defaults['Timestamp'] ?? time()
+        );
     }
 }
