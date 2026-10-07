@@ -175,4 +175,60 @@ trait DAOTrait
         }
         return $result;
     }
+
+    /**
+     * The billed-by logo as a data: URI for PDF templates, so wkhtmltopdf does not
+     * fetch it back through the public load balancer. Picks the same logo as
+     * getBilledByDataForOffice (division logo when the office uses it, else the
+     * company's), scoped to the caller's company. Returns null on any failure so
+     * the caller keeps the URL. Needs $s3 and $logger on the using class.
+     */
+    public function getEmbeddedLogo(?int $OfficeID, bool $isDispatch = false): ?string
+    {
+        $CompanyID = $this->IAM->getCompanyID();
+        if (empty($CompanyID) || !isset($this->s3)) {
+            return null;
+        }
+
+        try {
+            $Office = null;
+            if (!empty($OfficeID)) {
+                $Office = $this->getDaoForObject(TblOffice::class)
+                    ->select('DivisionID, AccountingDocumentLogo, DispatchDocumentLogo')
+                    ->where(['OfficeID' => $OfficeID, 'CompanyID' => $CompanyID])
+                    ->getOne();
+                if (empty($Office)) {
+                    return null;
+                }
+            }
+
+            $useDivision = !empty($Office) && $Office[$isDispatch ? 'DispatchDocumentLogo' : 'AccountingDocumentLogo'] == 2;
+            if ($useDivision) {
+                $Logo = $this->getDaoForObject(TblDivision::class)
+                    ->select('ImagePath')
+                    ->where(['DivisionID' => $Office['DivisionID'], 'CompanyID' => $CompanyID])
+                    ->getOne();
+            } else {
+                $Logo = $this->getDaoForObject(TblCompany::class)
+                    ->select('ImagePath')
+                    ->where(['CompanyID' => $CompanyID])
+                    ->getOne();
+            }
+            if (empty($Logo['ImagePath'])) {
+                return null;
+            }
+
+            // S3::get prefixes the key with the caller's CompanyID
+            $bytes = (string)$this->s3->get($Logo['ImagePath'], DOCUMENTS_BUCKET)['Body'];
+            $mime = $bytes === '' ? false : (new \finfo(FILEINFO_MIME_TYPE))->buffer($bytes);
+            if ($mime === false || strpos($mime, 'image/') !== 0) {
+                return null;
+            }
+
+            return 'data:' . $mime . ';base64,' . base64_encode($bytes);
+        } catch (\Throwable $e) {
+            $this->logger->warning('PDF logo not embedded: ' . $e->getMessage(), ['OfficeID' => $OfficeID]);
+            return null;
+        }
+    }
 }
