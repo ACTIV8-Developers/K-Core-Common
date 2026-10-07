@@ -214,6 +214,10 @@ class DbResourceManager implements ResourceManagerInterface
             if (!empty($additionalFields[$sortBy])) {
                 $additionalFields[$sortBy] = str_replace("{{" . $model->getTableName() . "}}", $model->getTableName(), $additionalFields[$sortBy]);
                 $sortBy = $this->fillPlaceholderTables($additionalFields[$sortBy], $model, $keys, $tableAliasReplaceMap);
+            } elseif (isset($fields[$sortBy])) {
+                // Qualify own columns: an FK join may select the same column name (e.g. t6.FuelPurchaseImportPreviewID),
+                // which makes a bare ORDER BY ambiguous on MSSQL.
+                $sortBy = $tableName . '.' . $sortBy;
             }
             $sql->orderBy($sortBy);
             $sql->order($sort);
