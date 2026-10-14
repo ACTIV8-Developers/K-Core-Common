@@ -37,7 +37,8 @@ trait ResourceCRUDTrait
                                                   $searchFields = null,
                                                   $NotExact = null,
                                                   $customSelect = null,
-                                                  $withNoLock = false)
+                                                  $withNoLock = false,
+                                                  $searchNotes = false)
     {
         /** Read user input from Request object.
          * =============================================================================== */
@@ -151,6 +152,20 @@ trait ResourceCRUDTrait
                         $queryParam .= sprintf("(%s%s LIKE '%%%s%%') OR ", $tName, $value, $this->escapeQueryParam($chunk));
                     }
                     $queryParam = substr($queryParam, 0, strlen($queryParam) - 3) . " OR ";
+                }
+            }
+
+            $notesCol = $searchNotes ? $model->getNotesSearchableColumns() : null;
+            if (isset($notesCol[0])) {
+                foreach ($notesCol as $value) {
+                    $chunks = !!$NotExact ? explode(' ', $query) : [$query];
+                    foreach ($chunks as $chunk) {
+                        if (str_contains($value, '%s')) {
+                            $queryParam .= sprintf("(" . $value . ") OR ", $this->escapeQueryParam($chunk));
+                        } else {
+                            $queryParam .= sprintf("(%s.%s LIKE '%%%s%%') OR ", $tableName, $value, $this->escapeQueryParam($chunk));
+                        }
+                    }
                 }
             }
 
@@ -353,6 +368,8 @@ trait ResourceCRUDTrait
 
         $NotExact = $this->get('NotExact', FILTER_SANITIZE_NUMBER_INT);
 
+        $searchNotes = !!$this->get('searchNotes', FILTER_SANITIZE_NUMBER_INT);
+
         return $this->handleResourceReadRaw($resourceDao,
             $output,
             $overrideParentKey,
@@ -370,7 +387,8 @@ trait ResourceCRUDTrait
             $searchFields,
             $NotExact,
             $customSelect,
-            $withNoLock);
+            $withNoLock,
+            $searchNotes);
     }
 
     public function handleSingleResourceRead(BaseDAO $resourceDao, $output = true, $overrideParentKey = null)

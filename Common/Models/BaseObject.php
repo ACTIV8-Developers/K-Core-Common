@@ -9,6 +9,10 @@ const DESC_COLUMN = 2;
 const EXCEL_COLUMN = 3;
 
 const NON_SEARCHABLE_KEYS = 9;
+// Searched only when the request opts in with searchNotes=1. Entries are column names of the
+// model's table, or SQL templates with a %s placeholder for the search term and {{tbl_X}} for the
+// model's own table (e.g. EXISTS on a child table).
+const NOTES_SEARCHABLE_COLUMNS = 10;
 const TABLES = 6;
 const ADDITIONAL_FIELDS = 7;
 
@@ -113,6 +117,11 @@ abstract class BaseObject
     public function getSearchableColumns()
     {
         return $this->getMetaByKey(SEARCHABLE_COLUMNS);
+    }
+
+    public function getNotesSearchableColumns()
+    {
+        return $this->getMetaByKey(NOTES_SEARCHABLE_COLUMNS);
     }
 
     public function getDefaultRead()
