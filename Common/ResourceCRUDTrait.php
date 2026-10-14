@@ -155,7 +155,8 @@ trait ResourceCRUDTrait
                 }
             }
 
-            $notesCol = $searchNotes ? $model->getNotesSearchableColumns() : null;
+            // Notes are long text, so they are searched only on request and only for terms of 3+ characters
+            $notesCol = ($searchNotes && mb_strlen(trim($query)) >= 3) ? $model->getNotesSearchableColumns() : null;
             if (isset($notesCol[0])) {
                 foreach ($notesCol as $value) {
                     $chunks = !!$NotExact ? explode(' ', $query) : [$query];
