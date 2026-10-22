@@ -32,7 +32,10 @@ class ImagePathManager extends BaseController implements ImagePathManagerInterfa
         $array = explode(".", $name);
         $ext = end($array);
         $table = $this->getDaoForObject($resource)->getModel()->getTableName();
-        $newName = str_replace('tbl_', '', $table) . '_' . $id . "." . $ext;
+        // Unique per upload: the same ImagePath must always mean the same bytes,
+        // because image URLs carry it as a cache version (truck-backend Avatar).
+        $newName = str_replace('tbl_', '', $table) . '_' . $id . '_' . bin2hex(random_bytes(4)) . "." . $ext;
+        $previous = $this->getDaoForObject($resource)->get($id)['ImagePath'] ?? null;
 
         $res = $this->s3->put($newName, $path, DOCUMENTS_BUCKET);
 
@@ -40,6 +43,9 @@ class ImagePathManager extends BaseController implements ImagePathManagerInterfa
             $this->getDaoForObject($resource)->update($id, [
                 'ImagePath' => $newName
             ]);
+            if (!empty($previous)) {
+                $this->s3->delete($previous, DOCUMENTS_BUCKET);
+            }
             return 1;
         } else {
             return 0;
