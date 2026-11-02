@@ -412,8 +412,6 @@ class DbResourceManager implements ResourceManagerInterface
             $data['CreateUpdateDate'] = $this->currentDateTime();
         }
 
-        // TODO Check if company matches
-
         $data = $this->additionalDataProcess($data);
 
         $values = '';
@@ -427,11 +425,44 @@ class DbResourceManager implements ResourceManagerInterface
             // TODO Clean param and add advanced params (Make function to reuse with the rest)
             $whereQuery .= (empty($whereQuery) ? '' : " AND ") . sprintf(" %s.%s=%s", $model->getTableName(), $k, is_numeric($v) ? $v : "'$v'");
         }
+        $whereQuery .= $this->companyScopeSql($model, $where);
 
         $sql = sprintf("UPDATE %s SET %s WHERE %s",
             $model->getTableName(), $values, $whereQuery);
 
         return $this->db->update($sql, $data);
+    }
+
+    /**
+     * Tenant scope for the write helpers (updateFromDataWhere/deleteWhere and the *ByID/*By
+     * wrappers built on them), mirroring the read side where findWhere()/readListBy() add
+     * "<table>.CompanyID=:CompanyID". The scope is added only when all three hold: the model
+     * has a CompanyID column, the caller did not put a CompanyID in $where themselves (code
+     * that resolves the owner explicitly keeps working), and there is a company in the
+     * IAM/user context. With no company in context the where clause is used as given, the
+     * same as the reads, so job, admin and CLI paths that run without a user are unchanged.
+     *
+     * The scope excludes OTHER companies' rows; a row whose CompanyID is NULL belongs to nobody
+     * and stays writable, because several nullable-CompanyID tables (tbl_LoadDocuments is the
+     * documented case, see LoadDocumentManager::findOwnedDocument) hold legacy rows that were
+     * never isolated and must still be updatable.
+     *
+     * @return string "" or " AND (<table>.CompanyID=<id> OR <table>.CompanyID IS NULL)"
+     */
+    private function companyScopeSql(BaseObject $model, array $where): string
+    {
+        if (!isset($model->getTableFields()['CompanyID']) || array_key_exists('CompanyID', $where)) {
+            return '';
+        }
+
+        $CompanyID = $this->IAM->getCompanyID();
+        if (empty($CompanyID)) {
+            return '';
+        }
+
+        $table = $model->getTableName();
+
+        return sprintf(" AND (%s.CompanyID=%d OR %s.CompanyID IS NULL)", $table, (int)$CompanyID, $table);
     }
 
     public function updateFromData(BaseObject $model, int $id, array $data): int
@@ -448,6 +479,7 @@ class DbResourceManager implements ResourceManagerInterface
             // TODO Clean param and add advanced params (Make function to reuse with the rest)
             $whereQuery .= (empty($whereQuery) ? '' : " AND ") . sprintf(" %s.%s=%s", $model->getTableName(), $k, is_numeric($v) ? $v : "'$v'");
         }
+        $whereQuery .= $this->companyScopeSql($model, $where);
 
         $sql = sprintf('DELETE FROM %s WHERE %s',
             $model->getTableName(),
